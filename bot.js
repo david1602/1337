@@ -32,7 +32,7 @@ const postStats = chatId => {
 bot.on('message', (msg) => {
   const chatId = msg.chat.id;
   const {first_name, last_name} = msg.from;
-  const text = `${first_name} is a cuck`;
+  const text = `${first_name} nope`;
 
   const time = moment(msg.date*1000).format('HH:mm');
   // send a message to the chat acknowledging receipt of their message
