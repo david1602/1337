@@ -1,0 +1,26 @@
+{
+  "name": "1337",
+  "version": "1.0.0",
+  "description": "Telegram bot for various stuff",
+  "main": "bot.js",
+  "dependencies": {
+    "knex": "^0.13.0",
+    "moment": "^2.18.1",
+    "node-telegram-bot-api": "^0.27.1",
+    "ntpsync": "^0.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "none"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/david1602/1337.git"
+  },
+  "author": "David Dernovoj",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/david1602/1337/issues"
+  },
+  "homepage": "https://github.com/david1602/1337#readme"
+}
