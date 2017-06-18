@@ -1,8 +1,8 @@
 const fs = require('fs');
-const db = require('db');
+const db = require('./db');
 const moment = require('moment');
 
-module.exports = {
+const utils = {
 
     /**
      * Gets a random number between two numbers.
@@ -55,7 +55,9 @@ module.exports = {
      * @return {Mixed}      Value from the array
      */
     getRandomOfArray(arr) {
-        return arr[this.getRandom(0, arr.length - 1)];
+        if (arr.length === 0)
+            return null;
+        return arr[utils.getRandom(0, arr.length - 1)];
     },
 
 
@@ -69,5 +71,19 @@ module.exports = {
      */
     getTime(date) {
         return moment.tz(moment(date && date * 1000), 'Europe/Berlin').format('HH:mm');
+    },
+
+
+    /**
+     * Gets the user name from a telegram user object.
+     *
+     * @param  {Object} user Telegram user object, usually the "from" property of a message
+     * @return {String}      Formatted full name of a user
+     */
+    getUserName(user) {
+        const {first_name, last_name} = user;
+        return [first_name, last_name].filter(e => !!e).join(' ');
     }
-}
+};
+
+module.exports = utils;
