@@ -1,6 +1,10 @@
+const db = require('../db');
+
 module.exports = bot => {
     bot.onText(/\/stats/, (msg, match) => {
       const chatId = msg.chat.id;
-      bot.sendMessage(chatId, renderStats());
+      return db.stats.getStatistics().then(msg => {
+          bot.sendMessage(chatId, msg);
+      });
     });
 }
