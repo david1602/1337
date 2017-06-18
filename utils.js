@@ -114,7 +114,7 @@ const utils = {
                 if (idx === 0)
                     return prev;
 
-                const currentRegex = new RegExp(`$${idx}`, 'g');
+                const currentRegex = new RegExp(`\\$${idx}`, 'g');
                 return prev.replace(currentRegex, matches[idx]);
             }, response);
             bot.sendMessage(chatId, returnMsg);
