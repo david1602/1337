@@ -1,5 +1,5 @@
-const {create} = require('../db').responses;
-const {registerRegex} = require('../utils');
+const {create, getAll} = require('../db').responses;
+const {registerRegex, errHandler} = require('../utils');
 
 // Registers the flameadd command
 module.exports = (bot, ctx) => {
@@ -16,9 +16,15 @@ module.exports = (bot, ctx) => {
          try {
              const valid = new RegExp(regex);
              return create(regex, response)
-                .then( () => {
+                .then( () => getAll() )
+                .then( responses => {
+                    ctx.responses = responses;
                     registerRegex(bot, regex, response);
                     bot.sendMessage(chatId, 'Your regex was added.');
+                })
+                .catch( err => {
+                    errHandler(err);
+                    bot.sendMessage(chatId, 'Failed to write to the database');
                 });
          }
          catch(e) {
