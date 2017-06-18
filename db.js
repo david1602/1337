@@ -146,12 +146,16 @@ const ex = {
             .then(records => {
                 let streak = 1;
 
+                // We definitely don't want to try inserting posts twice
+                if (records.length > 0 && records[0].postdate === postdate)
+                    return;
+
                 if (records.length > 0 && moment(postdate).diff(moment(records[0].postdate)) === 1)
                     streak = streak + records[0].streak;
 
                 return db.none(`
                     INSERT INTO posts(user_id, postdate, streak)
-                    VALUES($1, $2, $3)
+                    VALUES((SELECT id FROM users WHERE name = $1), $2, $3)
                     `, [user, postdate, streak]);
             });
         },
