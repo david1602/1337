@@ -180,7 +180,7 @@ const ex = {
             `, params)
             .then(data => {
                 return ['Current stats until today:']
-                .concat(data.map(obj => `${name}: Posts: ${obj.amountposts|| 0} || Max streak: ${obj.maxstreak || 0} || Current streak: ${obj.streak || 0}`))
+                .concat(data.map(obj => `${obj.name}: Posts: ${obj.amountposts|| 0} || Max streak: ${obj.maxstreak || 0} || Current streak: ${obj.streak || 0}`))
                 .join('\n');
             })
         },
