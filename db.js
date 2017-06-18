@@ -39,7 +39,7 @@ const ex = {
          * @param  {String} content     Flame content to be deleted
          * @return {Promise<String>}    Message for the bot to print which flames have been deleted for which users
          */
-        delete(content) {
+        del(content) {
             return db.any(`
                 SELECT *
                 FROM flames f
@@ -48,6 +48,9 @@ const ex = {
                 ORDER BY name
             `, [content])
             .then(data => {
+                if (data.length === 0)
+                    return `What's your problem? I didn't even know that flame.`;
+
                 const msg = data.map(flame => {
                     if (flame.user_id)
                         return `Deleted flame "${flame.content}" for user [${flame.name}]`;
@@ -59,7 +62,7 @@ const ex = {
 
                 return db.none(`
                     DELETE FROM flames WHERE content = $1;
-                `)
+                `, [content])
                 .then( () => msg );
             })
         },
@@ -233,7 +236,7 @@ const ex = {
          * @param  {String} name    Name of the user to delete
          * @return {String}         Message for the bot to print
          */
-        delete(name) {
+        del(name) {
             return db.tx(tx => {
                 return tx.one(`SELECT id FROM users WHERE name = $1`, [name])
                 .then(({id}) => {
