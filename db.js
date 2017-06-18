@@ -1,6 +1,7 @@
 const pgp = require('pg-promise')();
 const fs = require('fs');
 const path = require('path');
+const moment = require('moment');
 
 if (!fs.existsSync('config.js')) {
     throw new Error(`The configuration file does not exist. Refer to the README.`);
@@ -23,7 +24,7 @@ module.exports = {
          *
          * @param  {type} name    Name of the user the flame is for (optional)
          * @param  {type} content Content of the flame
-         * @return {undefined}
+         * @return {Promise<undefined>}
          */
         create(name, content) {
             return db.none(`
@@ -35,8 +36,8 @@ module.exports = {
         /**
          * Deletes a given flame
          *
-         * @param  {String} content Flame content to be deleted
-         * @return {String}         Message for the bot to print which flames have been deleted for which users
+         * @param  {String} content     Flame content to be deleted
+         * @return {Promise<String>}    Message for the bot to print which flames have been deleted for which users
          */
         delete(content) {
             return db.any(`
@@ -70,7 +71,7 @@ module.exports = {
          * @param  {String} user = null Optional user to get flames for, if null
          *                              flames for every one will be fetched
          *
-         * @return {String}             Message for the bot to print
+         * @return {Promise<String>}    Message for the bot to print
          */
         get(user = null) {
             if (user === null)
@@ -80,7 +81,7 @@ module.exports = {
                         INNER JOIN users u ON f.user_id = u.id
                     ORDER BY content;
                 `)
-                .then(preprocessFlames);
+                .then(data => data.map(preprocessFlames).join('\n'));
 
             return db.any(`
                 SELECT *
@@ -88,14 +89,15 @@ module.exports = {
                     INNER JOIN users u ON f.user_id = u.id
                 WHERE name = $1
                 ORDER BY content;
-            `, [user]);
+            `, [user])
+            .then(data => data.map(preprocessFlames).join('\n'));
         }
 
 
         /**
          * Returns all flames that are person specific and general
          *
-         * @return {String}  Message for the bot to print
+         * @return {Promise<String>}  Message for the bot to print
          */
         getAll() {
             return db.any(`
@@ -105,17 +107,96 @@ module.exports = {
                 ORDER BY name, content;
             `)
             .then(data => {
-                return data.map(preprocessFlames);
+                return data.map(preprocessFlames).join('\n');
             })
         }
     },
 
     stats: {
-        create() {
+
+        /**
+         * Creates a new post in the database
+         *
+         * @param  {String} user     Name of the user to post
+         * @param  {String} postdate description
+         * @return {Promise<undefined>}
+         */
+        create(user, postdate) {
+            return db.any(`
+                WITH maxDates AS (
+                  SELECT user_id, MAX(postdate) maxdate
+                  FROM posts
+                  GROUP BY 1
+                )
+                SELECT p.user_id, postdate, streak
+                FROM posts p
+                  INNER JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
+                  INNER JOIN users u ON p.user_id = u.id
+                WHERE name = $1
+            `, [user])
+            .then(records => {
+                let streak = 1;
+
+                if (records.length > 0 && moment(postdate).diff(moment(records[0].postdate)) === 1)
+                    streak = streak + records[0].streak;
+
+                return db.none(`
+                    INSERT INTO posts(user_id, postdate, streak)
+                    VALUES($1, $2, $3)
+                    `, [user, postdate, streak]);
+            });
+        },
+
+
+        /**
+         * Returns statistics since day 1 for everyone
+         *
+         * @param  {String} user = null Optional user to get the stats for, gets stats
+         *                              for all users if null
+         * @return {Promise<String>}    Message for the bot to print
+         */
+        getStatistics(user = null) {
+            const params = user ? [user] : void 0;
+            return db.any(`
+                WITH maxDates AS (
+                  SELECT user_id, MAX(postdate) maxdate, COUNT(*) AS amountPosts, max(streak) AS maxStreak
+                  FROM posts
+                  GROUP BY 1
+                )
+                SELECT p.user_id, postdate, streak, amountPosts, maxStreak
+                FROM posts p
+                  INNER JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
+                  INNER JOIN users u ON p.user_id = u.id
+                ${user ? 'WHERE u.name = $1' : ''}
+            `, params)
+            .then(data => {
+                return ['Current stats until today:']
+                .concat(data.map(obj => `${name}: Posts: ${obj.amountposts} || Max streak: ${obj.maxstreak} || Current streak: ${obj.streak}`))
+                .join('\n');
+            })
+        }
+    },
+
+    users: {
+
+        /**
+         * Creates a user
+         *
+         * @param  {Integer} id     Telegram ID of the user
+         * @param  {String} name    Telegram name ([first_name + last_name].join(' '))
+         * @return {Promise<undefined>}
+         */
+        create(id, name) {
 
         },
 
-        get() {
+        /**
+         * delete - description
+         *
+         * @param  {String} name    Name of the user to delete
+         * @return {String}         Message for the bot to print
+         */
+        delete(name) {
 
         }
     }
