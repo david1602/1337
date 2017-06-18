@@ -39,4 +39,4 @@ const {errHandler} = require('../utils');
             })
 
      });
- }
+ };
