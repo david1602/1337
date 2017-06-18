@@ -40,12 +40,14 @@ const utils = {
         return Promise.all([
             db.flames.getAll(),
             db.stats.getAll(),
-            db.users.getAll()
+            db.users.getAll(),
+            db.responses.getAll()
         ])
-        .then( ([flames, stats, users]) => {
+        .then( ([flames, stats, users, responses]) => {
             ctx.users = users;
             ctx.stats = stats;
             ctx.flames = flames;
+            ctx.responses = responses;
         });
     },
 
