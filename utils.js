@@ -31,12 +31,13 @@ const utils = {
 
     /**
      * Initializes the context of the bot,
-     * manipulating the input object
+     * manipulating the input context object
      *
+     * @param  {Object} bot     Bot object
      * @param  {Object} ctx     Context object
      * @return {Promise}
      */
-    init(ctx) {
+    init(bot, ctx) {
         return Promise.all([
             db.flames.getAll(),
             db.stats.getAll(),
@@ -48,6 +49,10 @@ const utils = {
             ctx.stats = stats;
             ctx.flames = flames;
             ctx.responses = responses;
+
+            responses.forEach(resp => {
+                utils.registerRegex(bot, resp.regex, resp.response);
+            });
         });
     },
 
