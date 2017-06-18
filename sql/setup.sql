@@ -3,7 +3,7 @@ CREATE SCHEMA public;
 
 CREATE TABLE users (
     id INTEGER PRIMARY KEY,
-    name varchar(255) NOT NULL
+    name varchar(255) NOT NULL UNIQUE
 );
 
 CREATE TABLE posts (
