@@ -9,7 +9,7 @@ CREATE TABLE users (
 CREATE TABLE posts (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    post_time TIMESTAMP,
+    postdate DATE,
     streak INTEGER
 );
 
