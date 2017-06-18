@@ -6,8 +6,11 @@ module.exports = (bot, ctx) => {
 /stats
 /flameadd <flame of any length>
 /flameadd [<person name, case sensitive>] <flame of any length>
+/flamedel <text>
 /say <text of any length>
 /respond /<valid regex>/ <response of any length>
+/listResponses
+/delResponse <ID>
 `);
      });
 };
