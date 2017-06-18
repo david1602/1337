@@ -7,6 +7,7 @@ module.exports = (bot, ctx) => {
 /flameadd <flame of any length>
 /flameadd [<person name, case sensitive>] <flame of any length>
 /say <text of any length>
-/respond /<valid regex>/ <response of any length>`)
+/respond /<valid regex>/ <response of any length>
+`);
      });
 };
