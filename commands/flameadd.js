@@ -1,4 +1,5 @@
-const {create} = require('../db').flames;
+const {create, getAll} = require('../db').flames;
+const {errHandler} = require('../utils');
 
 // Registers the flameadd command
  module.exports = (bot, ctx) => {
@@ -29,9 +30,8 @@ const {create} = require('../db').flames;
             .then( () => {
                 const forPerson = flame.person ? ` for ${flame.person}` : '';
                 const resp = `Added flame "${flame.flame}"${forPerson}.`
-
-                // send back the matched "whatever" to the chat
                 bot.sendMessage(chatId, resp);
+                return getAll().then( flames => {ctx.flames = flames;});
             })
             .catch(err => {
                 errHandler(err);
