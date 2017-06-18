@@ -1,6 +1,6 @@
 const fs = require('fs');
 const db = require('./db');
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 const utils = {
 
@@ -23,7 +23,9 @@ const utils = {
      * @return {type}     description
      */
     errHandler(err) {
+        fs.appendFileSync('err.log', moment().format('YYYY-MM-DD HH:mm'));
         fs.appendFileSync('err.log', err);
+        fs.appendFileSync('err.log', '\n');
     },
 
 
