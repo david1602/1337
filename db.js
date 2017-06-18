@@ -16,7 +16,7 @@ const db = pgp(connection);
  */
 const preprocessFlames = flame => `Flame: "${flame.content}" | Person: [${flame.user_id ? 'everyone' : flame.name}]`;
 
-module.exports = {
+const ex = {
     flames: {
 
         /**
@@ -29,7 +29,7 @@ module.exports = {
         create(name, content) {
             return db.none(`
                 INSERT INTO flames(user_id, content)
-                VALUES ((SELECT id FROM users WHERE name = $1), $3)
+                VALUES ((SELECT id FROM users WHERE name = $1), $2)
             `, [name, content]);
         },
 
@@ -100,9 +100,9 @@ module.exports = {
          */
         getAll() {
             return db.any(`
-                SELECT *
+                SELECT f.*, name
                 FROM flames f
-                    INNER JOIN users u ON f.user_id = u.id
+                    LEFT JOIN users u ON f.user_id = u.id
                 ORDER BY name, content;
             `);
         },
@@ -113,7 +113,7 @@ module.exports = {
          * @return {Promise<String>}  Message for the bot to print
          */
         printAll() {
-            return this.getAll()
+            return ex.getAll()
             .then(data => {
                 return data.map(preprocessFlames).join('\n');
             });
@@ -172,10 +172,10 @@ module.exports = {
                   FROM posts
                   GROUP BY 1
                 )
-                SELECT p.user_id, postdate, streak, amountPosts, maxStreak
+                SELECT u.id, u.name, postdate, streak, amountPosts, maxStreak
                 FROM users u
-                  LEFT JOIN JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
-                  LEFT JOIN posts p ON p.user_id = u.id
+                  LEFT JOIN maxDates m ON u.id = m.user_id
+                  LEFT JOIN posts p ON p.user_id = u.id AND p.postdate = m.maxdate
                 ${user ? 'WHERE u.name = $1' : ''}
             `, params)
             .then(data => {
@@ -192,10 +192,10 @@ module.exports = {
                   FROM posts
                   GROUP BY 1
                 )
-                SELECT p.user_id, postdate, streak, amountPosts, maxStreak
+                SELECT u.id, u.name, postdate, streak, amountPosts, maxStreak
                 FROM users u
-                  LEFT JOIN JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
-                  LEFT JOIN posts p ON p.user_id = u.id
+                  LEFT JOIN maxDates m ON u.id = m.user_id
+                  LEFT JOIN posts p ON p.user_id = u.id AND p.postdate = m.maxdate
             `);
         }
     },
@@ -242,3 +242,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = ex;
