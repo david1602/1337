@@ -16,8 +16,7 @@ const {token} = require('./config');
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
 const schedule = (fn, duration, param) => setTimeout(fn, duration, param);
-// const effectiveTime = '13:37';
-const effectiveTime = '19:00';
+const effectiveTime = '13:37';
 
 const ctx = {
     users: [],
