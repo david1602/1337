@@ -50,9 +50,11 @@ const utils = {
             ctx.flames = flames;
             ctx.responses = responses;
 
-            responses.forEach(resp => {
-                utils.registerRegex(bot, resp.regex, resp.response);
-            });
+            // Only register responses if the bot was passed
+            if (bot)
+                responses.forEach(resp => {
+                    utils.registerRegex(bot, resp.regex, resp.response);
+                });
         });
     },
 

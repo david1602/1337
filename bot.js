@@ -53,7 +53,7 @@ const registerUser = (msg, chatId) => {
 }
 
 // Initialize the cache
-init(ctx)
+init(bot, ctx)
 .then( () => {
     // Register all commands
     fs.readdirSync('./commands')
