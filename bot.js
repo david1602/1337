@@ -16,7 +16,8 @@ const {token} = require('./config');
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
 const schedule = (fn, duration, param) => setTimeout(fn, duration, param);
-const effectiveTime = '13:37';
+// const effectiveTime = '13:37';
+const effectiveTime = '19:00';
 
 const ctx = {
     users: [],
@@ -28,8 +29,6 @@ const ctx = {
 const posted = {};
 
 const postStats = chatId => {
-    const posts = posted[moment().format('YYYY-MM-DD')];
-
     delete posted[moment().format('YYYY-MM-DD')];
     return db.stats.getStatistics().then(msg => {
         bot.sendMessage(chatId, msg);
@@ -84,9 +83,14 @@ init(ctx)
                   posted[currentDate].scheduled = true;
               }
 
+              if (!posted[currentDate][userName])
+                posted[currentDate][userName] = {};
+
               // If the user posted previously on that very day and failed, he may not correct
-              if (posted[currentDate][userName] && !posted[currentDate][userName].success)
-                posted[currentDate][userName] = {success: true};
+              if (posted[currentDate][userName] && 'undefined' === typeof posted[currentDate][userName].success) {
+                  posted[currentDate][userName] = {success: true};
+                  db.stats.create(userName, currentDate)
+              }
           }
 
           // If someone generally posts 1337 at an unappropriate time, just flame them
