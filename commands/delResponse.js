@@ -1,4 +1,4 @@
-const {del} = require('../db').responses;
+const {del, getAll} = require('../db').responses;
 const {errHandler} = require('../utils');
 
 // Registers the flameadd command
@@ -15,6 +15,8 @@ module.exports = (bot, ctx) => {
          }
 
          return del(ID)
+            .then( () => getAll() )
+            .then( responses => { ctx.responses = responses; })
             .then( () => bot.sendMessage(chatId, `Deleted response #${ID}`))
             .then( () => bot.removeTextListener(new RegExp(response.regex)) );
      });
