@@ -187,7 +187,7 @@ module.exports = {
          * @return {Promise<undefined>}
          */
         create(id, name) {
-
+            return db.none(`INSERT INTO users(id, name) VALUES ($1, $2)`, [id, name]);
         },
 
         /**
@@ -197,7 +197,15 @@ module.exports = {
          * @return {String}         Message for the bot to print
          */
         delete(name) {
-
+            return db.tx(tx => {
+                return tx.one(`SELECT id FROM users WHERE name = $1`, [name])
+                .then(({id}) => {
+                    return tx.none(`DELETE FROM flames WHERE user_id = $1`, [id])
+                    .then( () => tx.none(`DELETE FROM posts WHERE user_id = $1`, [id]) )
+                    .then( () => tx.none(`DELETE FROM users WHERE id = $1`, [id]) );
+                })
+            })
+            .then( () => `Deleted user ${name} along with all posts and flames.`);
         }
     }
 };
