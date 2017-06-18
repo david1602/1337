@@ -1,5 +1,6 @@
 {
     token: 'token',
+    ownerid: 12345,
     dbConn: {
         client: 'pg',
         debug: false,
