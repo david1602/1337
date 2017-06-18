@@ -91,8 +91,7 @@ module.exports = {
                 ORDER BY content;
             `, [user])
             .then(data => data.map(preprocessFlames).join('\n'));
-        }
-
+        },
 
         /**
          * Returns all flames that are person specific and general
@@ -105,11 +104,21 @@ module.exports = {
                 FROM flames f
                     INNER JOIN users u ON f.user_id = u.id
                 ORDER BY name, content;
-            `)
+            `);
+        },
+
+        /**
+         * Returns all flames that are person specific and general
+         *
+         * @return {Promise<String>}  Message for the bot to print
+         */
+        printAll() {
+            return this.getAll()
             .then(data => {
                 return data.map(preprocessFlames).join('\n');
-            })
+            });
         }
+
     },
 
     stats: {
@@ -164,16 +173,30 @@ module.exports = {
                   GROUP BY 1
                 )
                 SELECT p.user_id, postdate, streak, amountPosts, maxStreak
-                FROM posts p
-                  INNER JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
-                  INNER JOIN users u ON p.user_id = u.id
+                FROM users u
+                  LEFT JOIN JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
+                  LEFT JOIN posts p ON p.user_id = u.id
                 ${user ? 'WHERE u.name = $1' : ''}
             `, params)
             .then(data => {
                 return ['Current stats until today:']
-                .concat(data.map(obj => `${name}: Posts: ${obj.amountposts} || Max streak: ${obj.maxstreak} || Current streak: ${obj.streak}`))
+                .concat(data.map(obj => `${name}: Posts: ${obj.amountposts|| 0} || Max streak: ${obj.maxstreak || 0} || Current streak: ${obj.streak || 0}`))
                 .join('\n');
             })
+        },
+
+        getAll() {
+            return db.any(`
+                WITH maxDates AS (
+                  SELECT user_id, MAX(postdate) maxdate, COUNT(*) AS amountPosts, max(streak) AS maxStreak
+                  FROM posts
+                  GROUP BY 1
+                )
+                SELECT p.user_id, postdate, streak, amountPosts, maxStreak
+                FROM users u
+                  LEFT JOIN JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
+                  LEFT JOIN posts p ON p.user_id = u.id
+            `);
         }
     },
 
@@ -188,6 +211,16 @@ module.exports = {
          */
         create(id, name) {
             return db.none(`INSERT INTO users(id, name) VALUES ($1, $2)`, [id, name]);
+        },
+
+
+        /**
+         * Returns all users
+         *
+         * @return {Promise<[Object]>} All users stored in the database
+         */
+        getAll() {
+            return db.any(`SELECT * FROM users`);
         },
 
         /**
