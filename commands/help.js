@@ -11,6 +11,7 @@ module.exports = (bot, ctx) => {
 /respond /<valid regex>/ <response of any length>
 /listResponses
 /delResponse <ID>
+/sync
 `);
      });
 };
