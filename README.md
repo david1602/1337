@@ -17,6 +17,7 @@ npm install
 
 ## Update your configuration file
 Copy `config.js.template` to `config.js` and fill out your data. The `dbConn` object is ready to use for knex, however, the `dbConn.connection` is relevant for `pg-promise`. The token is the token you receive from @BotFather on Telegram.
+Along with that, you can add an ownerid which can be a ID of a telegram user (probably yourself as administrator) who is the only person to execute certain commands.
 
 ## Set up the database
 _Create the database and a role with password and login permission. Make sure you use the credentials you used in the configuration. Also give the ownership to that role._
