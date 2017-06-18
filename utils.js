@@ -87,6 +87,31 @@ const utils = {
     getUserName(user) {
         const {first_name, last_name} = user;
         return [first_name, last_name].filter(e => !!e).join(' ');
+    },
+
+
+    /**
+     * Registers a regular expression / response to a given bot
+     *
+     * @param  {Object} bot      The bot object
+     * @param  {String} regex    Regex as string, as it's parsed
+     * @param  {String} response Response the bot is supposed to return
+     * @return {Undefined}
+     */
+    registerRegex(bot, regex, response) {
+        const parsed = new RegExp(regex, 'g');
+        bot.onText(parsed, (msg, matches) => {
+            const chatId = msg.chat.id;
+            // Go through all the params and replace
+            const returnMsg = matches.reduce( (prev, curr, idx) => {
+                if (idx === 0)
+                    return prev;
+
+                const currentRegex = new RegExp(`$${idx}`, 'g');
+                return prev.replace(currentRegex, matches[idx]);
+            }, response);
+            bot.sendMessage(chatId, returnMsg);
+        })
     }
 };
 
