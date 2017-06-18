@@ -18,3 +18,9 @@ CREATE TABLE flames (
     user_id INTEGER NULL,
     content varchar(255)
 );
+
+CREATE TABLE responses (
+    id SERIAL PRIMARY KEY,
+    regex varchar(255),
+    response varchar(255)
+);
