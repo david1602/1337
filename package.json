@@ -7,7 +7,7 @@
     "knex": "^0.13.0",
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
-    "node-telegram-bot-api": "^0.27.1",
+    "node-telegram-bot-api": "github:yagop/node-telegram-bot-api",
     "ntpsync": "^0.2.0",
     "pg-promise": "^5.9.3"
   },
