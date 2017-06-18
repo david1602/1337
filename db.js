@@ -247,6 +247,41 @@ const ex = {
             })
             .then( () => `Deleted user ${name} along with all posts and flames.`);
         }
+    },
+
+    responses: {
+
+        /**
+         * Creates a new response
+         *
+         * @param  {String} regex       Regex to check
+         * @param  {String} response    Line to respond with
+         * @return {Promise<undefined>}
+         */
+        create(regex, response) {
+            return db.none(`
+                INSERT INTO responses(regex, response) VALUES($1, $2)
+            `, [regex, response]);
+        },
+
+        /**
+         * Deletes a response by ID, the ID can be fetched via a command
+         *
+         * @param  {integer} id     ID of the response
+         * @return {Promise<undefined>}
+         */
+        del(id) {
+            return db.none(`DELETE FROM responses WHERE id = $1`, [parseInt(id)]);
+        },
+
+        /**
+         * Returns all responses with their regexes
+         *
+         * @return {Promise<[Object]>}  All responses
+         */
+        getAll() {
+            return db.any(`SELECT * FROM responses`);
+        }
     }
 };
 
