@@ -1,53 +1,109 @@
 const TelegramBot = require('node-telegram-bot-api');
-const moment = require('moment');
+const moment = require('moment-timezone');
 const fs = require('fs');
 const path = require('path');
-const {renderStats} = require('./utils');
+const {
+    init,
+    getTime,
+    getUserName,
+    getRandomOfArray,
+    errHandler
+} = require('./utils');
+const db = require('./db');
+const {token} = require('./config');
 
-const {token, dbConn} = require('./config');
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
 const schedule = (fn, duration, param) => setTimeout(fn, duration, param);
 const effectiveTime = '13:37';
 
-// ID: {first_name last_name counter}
-const stats = {};
+const ctx = {
+    users: [],
+    stats: [],
+    flames: []
+};
 
 // DATE: true/false
 const posted = {};
 
-// Register all commands
-fs.readdirSync('./commands')
-    .map(file => require(path.resolve('commands', file)))
-    .forEach(fn => fn(bot));
-
 const postStats = chatId => {
+    const posts = posted[moment().format('YYYY-MM-DD')];
+
     delete posted[moment().format('YYYY-MM-DD')];
-    bot.sendMessage(chatId, renderStats(stats));
+    return db.stats.getStatistics().then(msg => {
+        bot.sendMessage(chatId, msg);
+    });
+};
+
+const registerUser = (msg, chatId) => {
+    if (!ctx.users.find(usr => usr.id === msg.from.id)) {
+        const name = getUserName(msg.from);
+        return db.users.create(msg.from.id, name)
+        .then( () => Promise.all([
+            db.users.getAll(),
+            db.stats.getAll()
+        ]).then( ([users, stats]) => {
+            ctx.users = users;
+            ctx.stats = stats;
+            bot.sendMessage(chatId, `Nice meeting you, ${name}.`)
+        }));
+    }
+
+    return Promise.resolve();
 }
 
-// Listen for any kind of message. There are different kinds of
-// messages.
-bot.on('message', (msg) => {
-  const chatId = msg.chat.id;
-  const {first_name, last_name} = msg.from;
-  const text = `${first_name} nope`;
+// Initialize the cache
+init(ctx)
+.then( () => {
+    // Register all commands
+    fs.readdirSync('./commands')
+        .map(file => require(path.resolve('commands', file)))
+        .forEach(fn => fn(bot, ctx));
 
-  const time = moment(msg.date*1000).format('HH:mm');
-  // send a message to the chat acknowledging receipt of their message
-  if (msg.text === '1337' && time === effectiveTime) {
-      if (!stats[msg.from.id])
-        stats[msg.from.id] = { first_name, last_name, counter: 0};
+    // Listen for any kind of message. There are different kinds of
+    // messages.
+    bot.on('message', (msg) => {
+      const chatId = msg.chat.id;
+      const userName = getUserName(msg.from);
+      const currentDate = moment().format('YYYY-MM-DD');
 
-      stats[msg.from.id].counter = stats[msg.from.id].counter + 1;
+      // Set the posted object for the current day if it's not set yet
+      if (!posted[currentDate])
+        posted[currentDate] = {};
 
-      if (!posted[moment().format('YYYY-MM-DD')])
-        schedule(postStats, 60000, chatId);
-      posted[moment().format('YYYY-MM-DD')] = true;
-  }
-  if (msg.text === '1337' && time !== effectiveTime) {
-      bot.sendMessage(chatId, text);
-  }
+      // Register any user we don't know yet
+      return registerUser(msg, chatId)
+      .then( () => {
+          const time = getTime(msg.date);
+          // send a message to the chat acknowledging receipt of their message
+          if (msg.text === '1337' && time === effectiveTime) {
+              // Manipulate the state object
+              if (!posted[currentDate].scheduled) {
+                  schedule(postStats, 70000, chatId);
+                  posted[currentDate].scheduled = true;
+              }
+
+              // If the user posted previously on that very day and failed, he may not correct
+              if (posted[currentDate][userName] && !posted[currentDate][userName].success)
+                posted[currentDate][userName] = {success: true};
+          }
+
+          // If someone generally posts 1337 at an unappropriate time, just flame them
+          if (msg.text === '1337' && time !== effectiveTime) {
+              const flame = getRandomOfArray(ctx.flames.filter(f => f.user_id === msg.from.id || f.user_id === null));
+              if (!flame)
+                bot.sendMessage(chatId, 'I don\'t even know how to flame you, I haven\'t been taught any flames.');
+              else
+                bot.sendMessage(chatId, flame.content);
+          }
+
+          // If someone fails prior to the time on that day, he may not attmept again
+          if (msg.text === '1337' && !posted[currentDate][userName] && time < effectiveTime) {
+              posted[currentDate][userName] = {success: false};
+              bot.sendMessage(chatId, `You failed today ${userName}. You may not try again.`);
+          }
+      } )
+      .catch(errHandler);
+    });
 });
-
