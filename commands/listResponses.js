@@ -9,7 +9,7 @@ module.exports = (bot, ctx) => {
             return;
         }
 
-        const chatmsg = responses.map(resp => `[ID: ${resp.id} | regex: /${resp.regex}/ | response: "${resp.response}"]`);
+        const chatmsg = responses.map(resp => `[ID: ${resp.id} | regex: /${resp.regex}/ | response: "${resp.response}"]`).join('\n');
         bot.sendMessage(chatId, chatmsg);
      });
 };
