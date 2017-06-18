@@ -1,5 +1,6 @@
 const fs = require('fs');
 const db = require('db');
+const moment = require('moment');
 
 module.exports = {
     getRandom(min = 0, max = 999) {
@@ -21,5 +22,13 @@ module.exports = {
             ctx.stats = stats;
             ctx.flames = flames;
         });
+    },
+
+    getRandomOfArray(arr) {
+        return arr[this.getRandom(0, arr.length - 1)];
+    },
+
+    getTime(date) {
+        return moment.tz(moment(date && date * 1000), 'Europe/Berlin').format('HH:mm');
     }
 }
