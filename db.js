@@ -43,7 +43,7 @@ const ex = {
             return db.any(`
                 SELECT *
                 FROM flames f
-                    INNER JOIN users u ON f.user_id = u.id
+                    LEFT JOIN users u ON f.user_id = u.id
                 WHERE content = $1
                 ORDER BY name
             `, [content])
