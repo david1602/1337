@@ -1,5 +1,10 @@
 # 1337
 
+# About
+
+This bot was intentionally meant to keep track of us making certain posts at a certain time on telegram. Any custom commands can however be added and this can be expanded.
+This bot is not meant for anything large-scale as it caches a big part of the database internally to avoid sending too many database requests. The cache is persisted in the database so that the bot can load it again if it's restarted and no data is lost.
+
 # Setup
 
 ## Dependencies
