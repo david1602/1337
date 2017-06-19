@@ -106,7 +106,7 @@ const utils = {
      * @return {Undefined}
      */
     registerRegex(bot, regex, response) {
-        const parsed = new RegExp(regex, 'g');
+        const parsed = new RegExp(regex, 'gi');
         bot.onText(parsed, (msg, matches) => {
             const chatId = msg.chat.id;
             // Go through all the params and replace
