@@ -26,6 +26,11 @@ const {errHandler} = require('../utils');
             return;
         }
 
+        if ( ctx.flames.find(f => f.content === flame.flame) ) {
+            bot.sendMessage(chatId, 'I already know that flame.')
+            return;
+        }
+
         return create(flame.person, flame.flame)
             .then( () => {
                 const forPerson = flame.person ? ` for ${flame.person}` : '';
