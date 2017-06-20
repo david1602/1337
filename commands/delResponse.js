@@ -14,10 +14,20 @@ module.exports = (bot, ctx) => {
              return;
          }
 
+         // Find the previously registered regex.
+         // This has to be done using the internal regex objects
+         // because it has to be the same object.
+         // removeTextListener will not work with a new regular expression
+         // because that seems to be a different object and it requires
+         // the initial object reference.
+         const prevRegex = bot._textRegexpCallbacks
+                            .map(o => o.regexp)
+                            .find(r => r.toString() === new RegExp(response.regex, "gi").toString() );
+
          return del(ID)
             .then( () => getAll() )
             .then( responses => { ctx.responses = responses; })
             .then( () => bot.sendMessage(chatId, `Deleted response #${ID}`))
-            .then( () => bot.removeTextListener(new RegExp(response.regex)) );
+            .then( () => bot.removeTextListener(prevRegex) );
      });
 };
