@@ -8,6 +8,7 @@ module.exports = (bot, ctx) => {
 /flameadd <flame of any length, including linebreaks>
 /flameadd [<person name, case sensitive>] <flame of any length, including linebreaks>
 /flamedel <text>
+/flameList
 /say <text of any length>
 /respond /<valid regex>/ [<response of any length, including linebreaks>]
 /listResponses
