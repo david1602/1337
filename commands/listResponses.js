@@ -1,3 +1,5 @@
+const {sendList} = require('../utils');
+
 // Registers the flameadd command
 module.exports = (bot, ctx) => {
      bot.onText(/\/listResponses/, (msg) => {
@@ -9,7 +11,8 @@ module.exports = (bot, ctx) => {
             return;
         }
 
-        const chatmsg = responses.map(resp => `[ID: ${resp.id} | regex: /${resp.regex}/ | response: "${resp.response}"]`).join('\n');
-        bot.sendMessage(chatId, chatmsg);
+        const preprocessed = responses.map(resp => `[ID: ${resp.id} | regex: /${resp.regex}/ | response: "${resp.response}"]`);
+
+        return sendList(bot, chatId, preprocessed);
      });
 };
