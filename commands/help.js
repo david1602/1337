@@ -2,13 +2,14 @@
 module.exports = (bot, ctx) => {
      bot.onText(/\/help/, (msg, match) => {
          bot.sendMessage(msg.chat.id, `Anything in <> is a user input. The following commands are available:
-/say <text>
+/say <text, including linebreaks>
 /stats
-/flameadd <flame of any length>
-/flameadd [<person name, case sensitive>] <flame of any length>
+/flame <name of person, case sensitive>
+/flameadd <flame of any length, including linebreaks>
+/flameadd [<person name, case sensitive>] <flame of any length, including linebreaks>
 /flamedel <text>
 /say <text of any length>
-/respond /<valid regex>/ <response of any length>
+/respond /<valid regex>/ [<response of any length, including linebreaks>]
 /listResponses
 /delResponse <ID>
 /delUser [<person name, case sensitive>]
