@@ -3,7 +3,7 @@ const {errHandler} = require('../utils');
 
 // Registers the flameadd command
  module.exports = (bot, ctx) => {
-     bot.onText(/\/flameadd (.*)/, (msg, match) => {
+     bot.onText(/\/flameadd ([.\s\S]*)/, (msg, match) => {
          const chatId = msg.chat.id;
          const params = match[1]; // the captured "whatever"
 
