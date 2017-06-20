@@ -14,7 +14,15 @@ module.exports = (bot, ctx) => {
          }
 
          try {
-             const valid = new RegExp(regex);
+             const valid = new RegExp(regex, "gi");
+
+             const exists = !! ctx.responses.find(r => r.regex === regex);
+
+             if (exists) {
+                 bot.sendMessage(chatId, 'I already respond to that.');
+                 return;
+             }
+
              return create(regex, response)
                 .then( () => getAll() )
                 .then( responses => {
@@ -28,6 +36,7 @@ module.exports = (bot, ctx) => {
                 });
          }
          catch(e) {
+             console.log(e);
              bot.sendMessage(chatId, 'You didn\'t specify a proper regex. It could not be parsed.')
              return;
          }
