@@ -2,6 +2,9 @@ const fs = require('fs');
 const db = require('./db');
 const moment = require('moment-timezone');
 
+// Actually 4096 but it doesn't hurt to have some backup
+const max_msg_length = 3000;
+
 const utils = {
 
     /**
@@ -119,6 +122,51 @@ const utils = {
             }, response);
             bot.sendMessage(chatId, returnMsg);
         })
+    },
+
+
+
+    /**
+     * Sends a list of preprocessed strings
+     * concatted by the separator in separated messages,
+     * if the concatted string.length > msg_max_length
+     *
+     * @param  {type} bot              Bot object to send the message
+     * @param  {type} chatId           ID of the chat to push the message to
+     * @param  {type} textList         List of preprocessed string entries
+     * @param  {type} separator = '\n' Optional separator of array entries
+     * @return {Promise<undefinde>}
+     */
+    sendList(bot, chatId, textList, separator = '\n') {
+        // Return a promise for an empty list, too
+        if (textList.length === 0)
+            return Promise.resolve();
+
+        const tmp = textList.reduce( (p, c, idx) => {
+            // Ignore entries that are too long
+            if (c.length > max_msg_length) {
+                return p;
+            }
+            if (p.length + c.length > max_msg_length) {
+                const msg = textList.slice(p.lastIdx, idx).join(separator);
+                p.prom = p.prom.then( () => bot.sendMessage(chatId, msg) );
+                p.length = c.length;
+                p.lastIdx = idx;
+            }
+            else {
+                p.length = p.length + c.length;
+            }
+            return p;
+        }, {
+            length: 0,
+            lastIdx: 0,
+            prom: Promise.resolve()
+        });
+
+        return tmp.prom.then( () => {
+            const msg = textList.slice(tmp.lastIdx, textList.length).join(separator);
+            return bot.sendMessage(chatId, msg);
+        });
     }
 };
 
