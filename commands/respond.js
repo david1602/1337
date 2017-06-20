@@ -3,7 +3,7 @@ const {registerRegex, errHandler} = require('../utils');
 
 // Registers the flameadd command
 module.exports = (bot, ctx) => {
-     bot.onText(/\/respond \/(.+)\/ \[(.*)\]/, (msg, match) => {
+     bot.onText(/\/respond \/(.+)\/ \[([.\s\S]*)\]/, (msg, match) => {
          const chatId = msg.chat.id;
          const regex = match[1];
          const response = match[2];
