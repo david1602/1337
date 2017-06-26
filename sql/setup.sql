@@ -16,7 +16,7 @@ CREATE TABLE posts (
 CREATE TABLE flames (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NULL,
-    content varchar(255)
+    content varchar(3000)
 );
 
 CREATE TABLE responses (
