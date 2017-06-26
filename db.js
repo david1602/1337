@@ -153,7 +153,7 @@ const ex = {
                 if (records.length > 0 && records[0].postdate === postdate)
                     return;
 
-                if (records.length > 0 && moment(postdate).diff(moment(records[0].postdate)) === 1)
+                if (records.length > 0 && moment(postdate).diff(moment(records[0].postdate), 'days') === 1)
                     streak = streak + records[0].streak;
 
                 return db.none(`
