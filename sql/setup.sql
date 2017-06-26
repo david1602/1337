@@ -21,6 +21,6 @@ CREATE TABLE flames (
 
 CREATE TABLE responses (
     id SERIAL PRIMARY KEY,
-    regex varchar(255),
-    response varchar(255)
+    regex varchar(1024),
+    response varchar(3000)
 );
