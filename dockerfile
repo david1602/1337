@@ -11,7 +11,5 @@ WORKDIR /app
 
 RUN npm install
 
-RUN node bot.js
-
 WORKDIR /
 CMD ["/usr/bin/supervisord", "-c", "/supervisord.conf"]
