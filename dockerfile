@@ -5,11 +5,11 @@ RUN apk update && \
 
 RUN git clone https://github.com/david1602/1337.git /app
 
-ADD config.prod.js /app/config.js
+ADD . /app/config.js
 
 WORKDIR /app
 
 RUN npm install
 
 WORKDIR /
-CMD ["/usr/bin/supervisord", "-c", "/supervisord.conf"]
+CMD ["node", "/app/bot.js"]
