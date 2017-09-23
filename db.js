@@ -1,6 +1,5 @@
 const pgp = require('pg-promise')();
 const fs = require('fs');
-const path = require('path');
 const moment = require('moment');
 
 if (!fs.existsSync('config.js')) {
@@ -256,14 +255,13 @@ const ex = {
          *
          * @param  {String} regex       Regex to check
          * @param  {String} response    Line to respond with
-         * @param  {String} file_id     Telegram file ID
          * @param  {String} type        Response data type (photo, audio, video, etc.)
          * @return {Promise<undefined>}
          */
-        create(regex, response, file_id, type) {
+        create(regex, response, type) {
             return db.none(`
-                INSERT INTO responses(regex, response, file_id, type) VALUES($1, $2, $3, $4)
-            `, [regex, response, file_id, type]);
+                INSERT INTO responses(regex, response, type) VALUES($1, $2, $3)
+            `, [regex, response, type]);
         },
 
         /**

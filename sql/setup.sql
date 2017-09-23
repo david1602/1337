@@ -23,6 +23,5 @@ CREATE TABLE responses (
     id SERIAL PRIMARY KEY,
     regex varchar(1024),
     response varchar(3000),
-    file_id varchar(3000),
-    type varchar(20)
+    type varchar(20) DEFAULT 'Message'
 );

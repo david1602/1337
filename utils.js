@@ -52,11 +52,12 @@ const utils = {
             ctx.stats = stats;
             ctx.flames = flames;
             ctx.responses = responses;
+            ctx.voiceCache = {};
 
             // Only register responses if the bot was passed
             if (bot)
                 responses.forEach(resp => {
-                    utils.registerRegex(bot, resp.regex, resp.response);
+                    utils.registerRegex(bot, resp.regex, resp.response, resp.type);
                 });
         });
     },
@@ -108,7 +109,7 @@ const utils = {
      * @param  {String} response Response the bot is supposed to return
      * @return {Undefined}
      */
-    registerRegex(bot, regex, response) {
+    registerRegex(bot, regex, response, type = 'Message') {
         const parsed = new RegExp(regex, 'gi');
         bot.onText(parsed, (msg, matches) => {
             const chatId = msg.chat.id;
@@ -120,7 +121,7 @@ const utils = {
                 const currentRegex = new RegExp(`\\$${idx}`, 'g');
                 return prev.replace(currentRegex, matches[idx]);
             }, response);
-            bot.sendMessage(chatId, returnMsg);
+            bot[`send${type}`](chatId, returnMsg);
         })
     },
 
