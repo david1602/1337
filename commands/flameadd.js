@@ -5,10 +5,7 @@ const {errHandler} = require('../utils');
  module.exports = (bot, ctx) => {
      bot.onText(/\/flameadd ([.\s\S]*)/, (msg, match) => {
          const chatId = msg.chat.id;
-         const params = match[1]; // the captured "whatever"
-
          const userMatch = match[1].match(/\[(.+)\] (.*)/);
-
          const flame = {
              person: null,
              flame: ''

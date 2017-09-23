@@ -5,6 +5,7 @@
   "main": "bot.js",
   "dependencies": {
     "better-npm-run": "^0.1.0",
+    "eslint": "^4.7.2",
     "knex": "^0.13.0",
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",

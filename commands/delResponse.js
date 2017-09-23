@@ -1,5 +1,4 @@
 const {del, getAll} = require('../db').responses;
-const {errHandler} = require('../utils');
 
 // Registers the flameadd command
 module.exports = (bot, ctx) => {
