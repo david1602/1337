@@ -256,12 +256,14 @@ const ex = {
          *
          * @param  {String} regex       Regex to check
          * @param  {String} response    Line to respond with
+         * @param  {String} file_id     Telegram file ID
+         * @param  {String} type        Response data type (photo, audio, video, etc.)
          * @return {Promise<undefined>}
          */
-        create(regex, response) {
+        create(regex, response, file_id, type) {
             return db.none(`
-                INSERT INTO responses(regex, response) VALUES($1, $2)
-            `, [regex, response]);
+                INSERT INTO responses(regex, response, file_id, type) VALUES($1, $2, $3, $4)
+            `, [regex, response, file_id, type]);
         },
 
         /**

@@ -7,8 +7,9 @@ module.exports = (bot, ctx) => {
          const chatId = msg.chat.id;
          const regex = match[1];
          const response = match[2];
+         const isFile = !! msg.caption;
 
-         if (!response) {
+         if (!response && !isFile) {
              bot.sendMessage(chatId, 'You didn\'t specify a response.').
              return;
          }
@@ -20,6 +21,11 @@ module.exports = (bot, ctx) => {
 
              if (exists) {
                  bot.sendMessage(chatId, 'I already respond to that.');
+                 return;
+             }
+
+             if (isFile && response) {
+                 bot.sendMessage(chatId, 'You can\'t specify a response if you send a file.');
                  return;
              }
 
