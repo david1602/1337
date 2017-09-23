@@ -51,17 +51,23 @@ const registerUser = (msg, chatId) => {
     return Promise.resolve();
 }
 
+console.log('Initializing');
 // Initialize the cache
 init(bot, ctx)
 .then( () => {
+    console.log('Finished initializing');
     // Register all commands
     fs.readdirSync('./commands')
-        .map(file => require(path.resolve('commands', file)))
-        .forEach(fn => fn(bot, ctx));
+        .forEach(file => {
+            const fn = require(path.resolve('commands', file))
+            console.log(`Registering command /${file.replace('.js', '')}`);
+            fn(bot, ctx)
+        });
 
     // Listen for any kind of message. There are different kinds of
     // messages.
     bot.on('message', (msg) => {
+      console.log('Registering message handler');
       const chatId = msg.chat.id;
       const userName = getUserName(msg.from);
       const currentDate = moment().format('YYYY-MM-DD');
