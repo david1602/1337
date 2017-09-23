@@ -66,8 +66,8 @@ init(bot, ctx)
 
     // Listen for any kind of message. There are different kinds of
     // messages.
+    console.log('Registering message handler');
     bot.on('message', (msg) => {
-      console.log('Registering message handler');
       const chatId = msg.chat.id;
       const userName = getUserName(msg.from);
       const currentDate = moment().format('YYYY-MM-DD');
