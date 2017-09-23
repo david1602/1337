@@ -4,16 +4,35 @@
   "description": "Telegram bot for various stuff",
   "main": "bot.js",
   "dependencies": {
+    "better-npm-run": "^0.1.0",
     "knex": "^0.13.0",
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
-    "node-telegram-bot-api": "github:yagop/node-telegram-bot-api",
+    "node-telegram-bot-api": "github:david1602/node-telegram-bot-api",
     "ntpsync": "^0.2.0",
     "pg-promise": "^5.9.3"
   },
   "devDependencies": {},
   "scripts": {
-    "test": "none"
+    "test": "none",
+    "dev": "better-npm-run dev",
+    "start": "better-npm-run start"
+  },
+  "betterScripts": {
+    "dev": {
+      "command": "node bot.js",
+      "env": {
+        "NODE_ENV": "development",
+        "NTBA_FIX_319": true
+      }
+    },
+    "start": {
+      "command": "node bot.js",
+      "env": {
+        "NODE_ENV": "production",
+        "NTBA_FIX_319": true
+      }
+    }
   },
   "repository": {
     "type": "git",
