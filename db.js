@@ -178,17 +178,12 @@ const ex = {
                   FROM posts
                   GROUP BY 1
                 )
-                SELECT u.id, u.name, postdate, streak, amountPosts, maxStreak
+                SELECT u.id, u.name, postdate, COALESCE(streak, 0) AS streak, COALESCE(amountPosts, 0) AS amountPosts, COALESCE(maxStreak, 0) AS maxStreak
                 FROM users u
                   LEFT JOIN maxDates m ON u.id = m.user_id
                   LEFT JOIN posts p ON p.user_id = u.id AND p.postdate = m.maxdate
                 ${user ? 'WHERE u.name = $1' : ''}
-            `, params)
-            .then(data => {
-                return ['Current stats until today:']
-                .concat(data.map(obj => `${obj.name}: Posts: ${obj.amountposts|| 0} || Max streak: ${obj.maxstreak || 0} || Current streak: ${obj.streak || 0}`))
-                .join('\n');
-            })
+            `, params);
         },
 
         getAll() {

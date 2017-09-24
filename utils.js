@@ -126,6 +126,26 @@ const utils = {
     },
 
 
+    generateHTMLTable(columns, rows) {
+        const columnNames = Object.keys(columns);
+
+        return `<html>
+            <style type="text/css">
+                td, th{ padding: 5px; }
+                td.numeric{ text-align: right; }
+            </style>
+            <body>
+                <table>
+                    <tbody>
+                        <tr><th>Current stats until today:</th></tr>
+                        <tr>${ columnNames.map( col => `<th>${columns[col].title}</th>` ).join('') }</tr>
+                        ${ rows.map( row => `<tr>${columnNames.map( col => `<td class="${columns[col].type}">${row[col]}</td>` ).join('')}</tr>` ) }
+                    </tbody>
+                </table>
+            </body>
+        </html>`;
+    },
+
 
     /**
      * Sends a list of preprocessed strings
