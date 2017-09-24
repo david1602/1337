@@ -1,6 +1,7 @@
 const fs = require('fs');
 const db = require('./db');
 const moment = require('moment-timezone');
+const webshot = require('webshot');
 
 // Actually 4096 but it doesn't hurt to have some backup
 const max_msg_length = 3000;
@@ -188,6 +189,17 @@ const utils = {
             const msg = textList.slice(tmp.lastIdx, textList.length).join(separator);
             return bot.sendMessage(chatId, msg);
         });
+    },
+
+
+    /**
+     * Returns a stream of the rendered HTML
+     *
+     * @param  {string} html HTML to render
+     * @return {Stream}      Rendered stream
+     */
+    screenshotHtml(html) {
+        return webshot(html, {siteType: 'html'});
     }
 };
 
