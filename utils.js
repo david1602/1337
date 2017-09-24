@@ -127,24 +127,40 @@ const utils = {
     },
 
 
+    /**
+     * Generates a HTML table for the scores
+     * @param  {Object} columns     Description of the column headers
+     * @param  {[Object]} rows      Rows that are returned from the stats query
+     * @return {Object}             {html, window: {height, width}}
+     */
     generateHTMLTable(columns, rows) {
         const columnNames = Object.keys(columns);
-
-        return `<html>
+        const html = `<html>
             <style type="text/css">
-                td, th{ padding: 5px; }
-                td.numeric{ text-align: right; }
+                table { width: 600px; }
+                td, th{ padding: 5px; border-width: 1px }
+                td.numeric{ text-align: center; }
+                tr.row:nth-child(1){ width: 300px }
+
+                body { margin: 0px }
             </style>
             <body>
-                <table>
+                <table border="1">
                     <tbody>
-                        <tr><th>Current stats until today:</th></tr>
                         <tr>${ columnNames.map( col => `<th>${columns[col].title}</th>` ).join('') }</tr>
-                        ${ rows.map( row => `<tr>${columnNames.map( col => `<td class="${columns[col].type}">${row[col]}</td>` ).join('')}</tr>` ) }
+                        ${ rows.map( row => `<tr class="row">${columnNames.map( col => `<td class="${columns[col].type}">${row[col]}</td>` ).join('')}</tr>` ).join('') }
                     </tbody>
                 </table>
             </body>
         </html>`;
+
+        return {
+            html,
+            window: {
+                height: 45 + 29 * rows.length,
+                width: 600
+            }
+        };
     },
 
 
@@ -195,11 +211,29 @@ const utils = {
     /**
      * Returns a stream of the rendered HTML
      *
-     * @param  {string} html HTML to render
-     * @return {Stream}      Rendered stream
+     * @param  {string} html       HTML to render
+     * @param  {object} screenSize Global browser window object
+     * @return {Stream}            Rendered stream
      */
-    screenshotHtml(html) {
-        return webshot(html, {siteType: 'html'});
+    screenshotHtml(html, screenSize) {
+        return webshot(html, {siteType: 'html', screenSize});
+    },
+
+    /**
+     * Converts a given stream to a buffer
+     * @param  {Stream} stream      Stream to convert
+     * @return {Promise<Buffer>}    Promise resolved with a Buffer
+     */
+    convertStreamToBuffer(stream) {
+        return new Promise((resolve, reject) => {
+            const bufs = [];
+            stream.on('data', function(d){ bufs.push(d); });
+            stream.on('end', function(){
+                resolve(Buffer.concat(bufs));
+            });
+
+            stream.on('error', err => reject(err));
+          })
     }
 };
 
