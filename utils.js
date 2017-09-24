@@ -247,7 +247,7 @@ const utils = {
         if (process.env.NODE_ENV === 'development')
             return true;
 
-        return msg.chat.id === config.chatId;
+        return msg.chat.id === config.chatId || msg.chat.id === config.ownerid;
     }
 };
 
