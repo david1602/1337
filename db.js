@@ -214,7 +214,7 @@ const ex = {
                   LEFT JOIN maxDates m ON u.id = m.user_id
                   LEFT JOIN posts p ON p.user_id = u.id AND p.postdate = m.maxdate
                 ${user ? 'WHERE u.name = $1' : ''}
-                ORDER BY 5, 4, 6, 2
+                ORDER BY 5 DESC, 4 DESC, 6 DESC, 2 ASC
             `,
                 params
             );
