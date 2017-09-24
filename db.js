@@ -3,21 +3,24 @@ const fs = require('fs');
 const moment = require('moment');
 
 if (!fs.existsSync('config.js')) {
-    throw new Error(`The configuration file does not exist. Refer to the README.`);
+    throw new Error(
+        `The configuration file does not exist. Refer to the README.`
+    );
 }
 
-const {connection} = require('./config').dbConn;
+const { connection } = require('./config').dbConn;
 const db = pgp(connection);
-
 
 /**
  * Function to preprocess flames, requires a JOIN on the users table
  */
-const preprocessFlames = flame => `Flame: "${flame.content}" | Person: [${flame.user_id ? 'everyone' : flame.name}]`;
+const preprocessFlames = flame =>
+    `Flame: "${flame.content}" | Person: [${flame.user_id
+        ? 'everyone'
+        : flame.name}]`;
 
 const ex = {
     flames: {
-
         /**
          * Creates a new flame.
          *
@@ -26,10 +29,13 @@ const ex = {
          * @return {Promise<undefined>}
          */
         create(name, content) {
-            return db.none(`
+            return db.none(
+                `
                 INSERT INTO flames(user_id, content)
                 VALUES ((SELECT id FROM users WHERE name = $1), $2)
-            `, [name, content]);
+            `,
+                [name, content]
+            );
         },
 
         /**
@@ -39,33 +45,40 @@ const ex = {
          * @return {Promise<String>}    Message for the bot to print which flames have been deleted for which users
          */
         del(content) {
-            return db.any(`
+            return db
+                .any(
+                    `
                 SELECT *
                 FROM flames f
                     LEFT JOIN users u ON f.user_id = u.id
                 WHERE content = $1
                 ORDER BY name
-            `, [content])
-            .then(data => {
-                if (data.length === 0)
-                    return `What's your problem? I didn't even know that flame.`;
+            `,
+                    [content]
+                )
+                .then(data => {
+                    if (data.length === 0)
+                        return `What's your problem? I didn't even know that flame.`;
 
-                const msg = data.map(flame => {
-                    if (flame.user_id)
-                        return `Deleted flame "${flame.content}" for user [${flame.name}]`;
+                    const msg = data
+                        .map(flame => {
+                            if (flame.user_id)
+                                return `Deleted flame "${flame.content}" for user [${flame.name}]`;
 
-                    return `Deleted flame ${flame.content}`;
-                })
-                .join('\n');
+                            return `Deleted flame ${flame.content}`;
+                        })
+                        .join('\n');
 
-
-                return db.none(`
+                    return db
+                        .none(
+                            `
                     DELETE FROM flames WHERE content = $1;
-                `, [content])
-                .then( () => msg );
-            })
+                `,
+                            [content]
+                        )
+                        .then(() => msg);
+                });
         },
-
 
         /**
          * Get all flames for one person or flames that apply to everone
@@ -77,22 +90,29 @@ const ex = {
          */
         get(user = null) {
             if (user === null)
-                return db.any(`
+                return db
+                    .any(
+                        `
                     SELECT *
                     FROM flames f
                         INNER JOIN users u ON f.user_id = u.id
                     ORDER BY content;
-                `)
-                .then(data => data.map(preprocessFlames).join('\n'));
+                `
+                    )
+                    .then(data => data.map(preprocessFlames).join('\n'));
 
-            return db.any(`
+            return db
+                .any(
+                    `
                 SELECT *
                 FROM flames f
                     INNER JOIN users u ON f.user_id = u.id
                 WHERE name = $1
                 ORDER BY content;
-            `, [user])
-            .then(data => data.map(preprocessFlames).join('\n'));
+            `,
+                    [user]
+                )
+                .then(data => data.map(preprocessFlames).join('\n'));
         },
 
         /**
@@ -115,16 +135,13 @@ const ex = {
          * @return {Promise<String>}  Message for the bot to print
          */
         printAll() {
-            return ex.getAll()
-            .then(data => {
+            return ex.getAll().then(data => {
                 return data.map(preprocessFlames).join('\n');
             });
         }
-
     },
 
     stats: {
-
         /**
          * Creates a new post in the database
          *
@@ -133,7 +150,9 @@ const ex = {
          * @return {Promise<undefined>}
          */
         create(user, postdate) {
-            return db.any(`
+            return db
+                .any(
+                    `
                 WITH maxDates AS (
                   SELECT user_id, MAX(postdate) maxdate
                   FROM posts
@@ -144,24 +163,34 @@ const ex = {
                   INNER JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
                   INNER JOIN users u ON p.user_id = u.id
                 WHERE name = $1
-            `, [user])
-            .then(records => {
-                let streak = 1;
+            `,
+                    [user]
+                )
+                .then(records => {
+                    let streak = 1;
 
-                // We definitely don't want to try inserting posts twice
-                if (records.length > 0 && records[0].postdate === postdate)
-                    return;
+                    // We definitely don't want to try inserting posts twice
+                    if (records.length > 0 && records[0].postdate === postdate)
+                        return;
 
-                if (records.length > 0 && moment(postdate).diff(moment(records[0].postdate), 'days') === 1)
-                    streak = streak + records[0].streak;
+                    if (
+                        records.length > 0 &&
+                        moment(postdate).diff(
+                            moment(records[0].postdate),
+                            'days'
+                        ) === 1
+                    )
+                        streak = streak + records[0].streak;
 
-                return db.none(`
+                    return db.none(
+                        `
                     INSERT INTO posts(user_id, postdate, streak)
                     VALUES((SELECT id FROM users WHERE name = $1), $2, $3)
-                    `, [user, postdate, streak]);
-            });
+                    `,
+                        [user, postdate, streak]
+                    );
+                });
         },
-
 
         /**
          * Returns statistics since day 1 for everyone
@@ -172,7 +201,8 @@ const ex = {
          */
         getStatistics(user = null) {
             const params = user ? [user] : void 0;
-            return db.any(`
+            return db.any(
+                `
                 WITH maxDates AS (
                   SELECT user_id, MAX(postdate) maxdate, COUNT(*) AS amountPosts, max(streak) AS maxStreak
                   FROM posts
@@ -183,7 +213,9 @@ const ex = {
                   LEFT JOIN maxDates m ON u.id = m.user_id
                   LEFT JOIN posts p ON p.user_id = u.id AND p.postdate = m.maxdate
                 ${user ? 'WHERE u.name = $1' : ''}
-            `, params);
+            `,
+                params
+            );
         },
 
         getAll() {
@@ -202,7 +234,6 @@ const ex = {
     },
 
     users: {
-
         /**
          * Creates a user
          *
@@ -211,9 +242,11 @@ const ex = {
          * @return {Promise<undefined>}
          */
         create(id, name) {
-            return db.none(`INSERT INTO users(id, name) VALUES ($1, $2)`, [id, name]);
+            return db.none(`INSERT INTO users(id, name) VALUES ($1, $2)`, [
+                id,
+                name
+            ]);
         },
-
 
         /**
          * Returns all users
@@ -231,20 +264,36 @@ const ex = {
          * @return {String}         Message for the bot to print
          */
         del(name) {
-            return db.tx(tx => {
-                return tx.one(`SELECT id FROM users WHERE name = $1`, [name])
-                .then(({id}) => {
-                    return tx.none(`DELETE FROM flames WHERE user_id = $1`, [id])
-                    .then( () => tx.none(`DELETE FROM posts WHERE user_id = $1`, [id]) )
-                    .then( () => tx.none(`DELETE FROM users WHERE id = $1`, [id]) );
+            return db
+                .tx(tx => {
+                    return tx
+                        .one(`SELECT id FROM users WHERE name = $1`, [name])
+                        .then(({ id }) => {
+                            return tx
+                                .none(`DELETE FROM flames WHERE user_id = $1`, [
+                                    id
+                                ])
+                                .then(() =>
+                                    tx.none(
+                                        `DELETE FROM posts WHERE user_id = $1`,
+                                        [id]
+                                    )
+                                )
+                                .then(() =>
+                                    tx.none(`DELETE FROM users WHERE id = $1`, [
+                                        id
+                                    ])
+                                );
+                        });
                 })
-            })
-            .then( () => `Deleted user ${name} along with all posts and flames.`);
+                .then(
+                    () =>
+                        `Deleted user ${name} along with all posts and flames.`
+                );
         }
     },
 
     responses: {
-
         /**
          * Creates a new response
          *
@@ -254,9 +303,12 @@ const ex = {
          * @return {Promise<undefined>}
          */
         create(regex, response, type) {
-            return db.none(`
+            return db.none(
+                `
                 INSERT INTO responses(regex, response, type) VALUES($1, $2, $3)
-            `, [regex, response, type]);
+            `,
+                [regex, response, type]
+            );
         },
 
         /**
@@ -266,7 +318,9 @@ const ex = {
          * @return {Promise<undefined>}
          */
         del(id) {
-            return db.none(`DELETE FROM responses WHERE id = $1`, [parseInt(id)]);
+            return db.none(`DELETE FROM responses WHERE id = $1`, [
+                parseInt(id)
+            ]);
         },
 
         /**
