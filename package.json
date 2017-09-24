@@ -5,14 +5,14 @@
   "main": "bot.js",
   "dependencies": {
     "better-npm-run": "^0.1.0",
+    "canvas": "^1.6.7",
     "eslint": "^4.7.2",
     "knex": "^0.13.0",
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
     "node-telegram-bot-api": "github:david1602/node-telegram-bot-api",
     "ntpsync": "^0.2.0",
-    "pg-promise": "^5.9.3",
-    "webshot": "^0.18.0"
+    "pg-promise": "^5.9.3"
   },
   "devDependencies": {},
   "scripts": {
