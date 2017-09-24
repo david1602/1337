@@ -11,7 +11,8 @@
     "moment-timezone": "^0.5.13",
     "node-telegram-bot-api": "github:david1602/node-telegram-bot-api",
     "ntpsync": "^0.2.0",
-    "pg-promise": "^5.9.3"
+    "pg-promise": "^5.9.3",
+    "webshot": "^0.18.0"
   },
   "devDependencies": {},
   "scripts": {
