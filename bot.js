@@ -69,8 +69,13 @@ init(bot, ctx)
     console.log('Registering message handler');
     bot.on('message', (msg) => {
       const chatId = msg.chat.id;
+      const userId = msg.from.id;
       const userName = getUserName(msg.from);
       const currentDate = moment().format('YYYY-MM-DD');
+      const isVoice = !! msg.voice;
+
+      if(isVoice)
+        ctx.voiceCache[userId] = msg.voice.file_id;
 
       // Set the posted object for the current day if it's not set yet
       if (!posted[currentDate])

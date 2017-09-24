@@ -198,4 +198,44 @@ module.exports = (bot, ctx) => {
          }
      });
 
+     bot.onText(/\/respond \/(.+)\/ \$voice/, (msg, match) => {
+         const chatId = msg.chat.id;
+         const regex = match[1];
+         const userId = msg.from.id;
+         const fileId = ctx.voiceCache[userId];
+
+         if(!fileId) {
+             bot.sendMessage(chatId, 'You have to send a voice recording before calling this command.');
+             return;
+         }
+
+         try {
+             new RegExp(regex, "gi");
+
+             const exists = !! ctx.responses.find(r => r.regex === regex);
+
+             if (exists) {
+                 bot.sendMessage(chatId, 'I already respond to that.');
+                 return;
+             }
+
+             return create(regex, fileId, 'Voice')
+                .then( () => getAll() )
+                .then( responses => {
+                    ctx.responses = responses;
+                    registerRegex(bot, regex, fileId, 'Voice');
+                    bot.sendMessage(chatId, 'Your regex was added.');
+                })
+                .catch( err => {
+                    errHandler(err);
+                    bot.sendMessage(chatId, 'Failed to write to the database');
+                });
+         }
+         catch(e) {
+             console.log(e);
+             bot.sendMessage(chatId, 'You didn\'t specify a proper regex. It could not be parsed.')
+             return;
+         }
+     });
+
 };
