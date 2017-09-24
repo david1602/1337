@@ -2,6 +2,7 @@ const fs = require('fs');
 const db = require('./db');
 const moment = require('moment-timezone');
 const webshot = require('webshot');
+const config = require('./config');
 
 // Actually 4096 but it doesn't hurt to have some backup
 const max_msg_length = 3000;
@@ -234,6 +235,19 @@ const utils = {
 
             stream.on('error', err => reject(err));
           })
+    },
+
+    /**
+     * Checks the message to see if the bot should reply
+     *
+     * @param  {Object} msg     Telegram message object
+     * @return {Boolean}
+     */
+    checkGroup(msg) {
+        if (process.env.NODE_ENV === 'development')
+            return true;
+
+        return msg.chat.id === config.chatId;
     }
 };
 

@@ -11,10 +11,20 @@ const {
 } = require('./utils');
 const db = require('./db');
 const {token} = require('./config');
+const utils = require('./utils');
 
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
+
+const fn = bot.processUpdate.bind(bot);
+
+bot.processUpdate = function(update) {
+    if (!utils.checkGroup(update.message))
+        return;
+    fn(update);
+}
+
 const schedule = (fn, duration, param) => setTimeout(fn, duration, param);
 const effectiveTime = '13:37';
 
