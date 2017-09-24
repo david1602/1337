@@ -195,9 +195,10 @@ const ex = {
         /**
          * Returns statistics since day 1 for everyone
          *
-         * @param  {String} user = null Optional user to get the stats for, gets stats
-         *                              for all users if null
-         * @return {Promise<String>}    Message for the bot to print
+         * @param  {String} user = null     Optional user to get the stats for, gets stats
+         *                                  for all users if null
+         *
+         * @return {Promise<[Object]>}      Results
          */
         getStatistics(user = null) {
             const params = user ? [user] : void 0;
@@ -213,6 +214,7 @@ const ex = {
                   LEFT JOIN maxDates m ON u.id = m.user_id
                   LEFT JOIN posts p ON p.user_id = u.id AND p.postdate = m.maxdate
                 ${user ? 'WHERE u.name = $1' : ''}
+                ORDER BY 5, 4, 6, 2
             `,
                 params
             );
