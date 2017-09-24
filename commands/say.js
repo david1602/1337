@@ -5,4 +5,4 @@ module.exports = bot => {
         const resp = match[1];
         bot.sendMessage(chatId, resp);
     });
-}
+};

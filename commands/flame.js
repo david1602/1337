@@ -1,4 +1,4 @@
-const {getRandomOfArray} = require('../utils');
+const { getRandomOfArray } = require('../utils');
 
 // Registers the flame command
 module.exports = (bot, ctx) => {
@@ -11,10 +11,14 @@ module.exports = (bot, ctx) => {
             return;
         }
 
-        const flame = getRandomOfArray(ctx.flames.filter(f => f.user_id === usr.id || f.user_id === null));
+        const flame = getRandomOfArray(
+            ctx.flames.filter(f => f.user_id === usr.id || f.user_id === null)
+        );
         if (!flame)
-          bot.sendMessage(chatId, 'I don\'t even know how to flame you, I haven\'t been taught any flames.');
-        else
-          bot.sendMessage(chatId, flame.content);
+            bot.sendMessage(
+                chatId,
+                "I don't even know how to flame you, I haven't been taught any flames."
+            );
+        else bot.sendMessage(chatId, flame.content);
     });
-}
+};

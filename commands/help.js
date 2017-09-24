@@ -1,7 +1,9 @@
 // Registers the flameadd command
-module.exports = (bot) => {
-     bot.onText(/\/help/, (msg) => {
-         bot.sendMessage(msg.chat.id, `Anything in <> is a user input. The following commands are available:
+module.exports = bot => {
+    bot.onText(/\/help/, msg => {
+        bot.sendMessage(
+            msg.chat.id,
+            `Anything in <> is a user input. The following commands are available:
 /say <text, including linebreaks>
 /stats
 /flame <name of person, case sensitive>
@@ -20,6 +22,7 @@ module.exports = (bot) => {
 /delResponse <ID>
 /delUser [<person name, case sensitive>]
 /sync
-`);
-     });
+`
+        );
+    });
 };
