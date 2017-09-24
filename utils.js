@@ -1,14 +1,15 @@
 const fs = require('fs');
 const db = require('./db');
 const moment = require('moment-timezone');
-const webshot = require('webshot');
 const config = require('./config');
+const Canvas = require('canvas');
 
 // Actually 4096 but it doesn't hurt to have some backup
 const max_msg_length = 3000;
 
-const utils = {
+const getHeight = measurement => measurement.emHeightAscent;
 
+const utils = {
     /**
      * Gets a random number between two numbers.
      *
@@ -17,9 +18,8 @@ const utils = {
      * @return {Integer}           Random number in the defined frame
      */
     getRandom(min = 0, max = 999) {
-        return Math.floor( Math.random() * (max - min + 1) + min );
+        return Math.floor(Math.random() * (max - min + 1) + min);
     },
-
 
     /**
      * Error handler for any errors occuring during the bot runtime
@@ -32,7 +32,6 @@ const utils = {
         fs.appendFileSync('err.log', err);
         fs.appendFileSync('err.log', '\n');
     },
-
 
     /**
      * Initializes the context of the bot,
@@ -48,8 +47,7 @@ const utils = {
             db.stats.getAll(),
             db.users.getAll(),
             db.responses.getAll()
-        ])
-        .then( ([flames, stats, users, responses]) => {
+        ]).then(([flames, stats, users, responses]) => {
             ctx.users = users;
             ctx.stats = stats;
             ctx.flames = flames;
@@ -59,11 +57,15 @@ const utils = {
             // Only register responses if the bot was passed
             if (bot)
                 responses.forEach(resp => {
-                    utils.registerRegex(bot, resp.regex, resp.response, resp.type);
+                    utils.registerRegex(
+                        bot,
+                        resp.regex,
+                        resp.response,
+                        resp.type
+                    );
                 });
         });
     },
-
 
     /**
      * Returns a random value from the given array
@@ -72,11 +74,9 @@ const utils = {
      * @return {Mixed}      Value from the array
      */
     getRandomOfArray(arr) {
-        if (arr.length === 0)
-            return null;
+        if (arr.length === 0) return null;
         return arr[utils.getRandom(0, arr.length - 1)];
     },
-
 
     /**
      * Gets the time in a certain timezone as HH:mm.
@@ -87,9 +87,10 @@ const utils = {
      * @return {String}         HH:mm formatted time
      */
     getTime(date) {
-        return moment.tz(moment(date && date * 1000), 'Europe/Berlin').format('HH:mm');
+        return moment
+            .tz(moment(date && date * 1000), 'Europe/Berlin')
+            .format('HH:mm');
     },
-
 
     /**
      * Gets the user name from a telegram user object.
@@ -98,10 +99,9 @@ const utils = {
      * @return {String}      Formatted full name of a user
      */
     getUserName(user) {
-        const {first_name, last_name} = user;
+        const { first_name, last_name } = user;
         return [first_name, last_name].filter(e => !!e).join(' ');
     },
-
 
     /**
      * Registers a regular expression / response to a given bot
@@ -116,54 +116,15 @@ const utils = {
         bot.onText(parsed, (msg, matches) => {
             const chatId = msg.chat.id;
             // Go through all the params and replace
-            const returnMsg = matches.reduce( (prev, curr, idx) => {
-                if (idx === 0)
-                    return prev;
+            const returnMsg = matches.reduce((prev, curr, idx) => {
+                if (idx === 0) return prev;
 
                 const currentRegex = new RegExp(`\\$${idx}`, 'g');
                 return prev.replace(currentRegex, matches[idx]);
             }, response);
             bot[`send${type}`](chatId, returnMsg);
-        })
+        });
     },
-
-
-    /**
-     * Generates a HTML table for the scores
-     * @param  {Object} columns     Description of the column headers
-     * @param  {[Object]} rows      Rows that are returned from the stats query
-     * @return {Object}             {html, window: {height, width}}
-     */
-    generateHTMLTable(columns, rows) {
-        const columnNames = Object.keys(columns);
-        const html = `<html>
-            <style type="text/css">
-                table { width: 600px; }
-                td, th{ padding: 5px; border-width: 1px }
-                td.numeric{ text-align: center; }
-                tr.row:nth-child(1){ width: 300px }
-
-                body { margin: 0px }
-            </style>
-            <body>
-                <table border="1">
-                    <tbody>
-                        <tr>${ columnNames.map( col => `<th>${columns[col].title}</th>` ).join('') }</tr>
-                        ${ rows.map( row => `<tr class="row">${columnNames.map( col => `<td class="${columns[col].type}">${row[col]}</td>` ).join('')}</tr>` ).join('') }
-                    </tbody>
-                </table>
-            </body>
-        </html>`;
-
-        return {
-            html,
-            window: {
-                height: 45 + 29 * rows.length,
-                width: 600
-            }
-        };
-    },
-
 
     /**
      * Sends a list of preprocessed strings
@@ -178,63 +139,37 @@ const utils = {
      */
     sendList(bot, chatId, textList, separator = '\n') {
         // Return a promise for an empty list, too
-        if (textList.length === 0)
-            return Promise.resolve();
+        if (textList.length === 0) return Promise.resolve();
 
-        const tmp = textList.reduce( (p, c, idx) => {
-            // Ignore entries that are too long
-            if (c.length > max_msg_length) {
+        const tmp = textList.reduce(
+            (p, c, idx) => {
+                // Ignore entries that are too long
+                if (c.length > max_msg_length) {
+                    return p;
+                }
+                if (p.length + c.length > max_msg_length) {
+                    const msg = textList.slice(p.lastIdx, idx).join(separator);
+                    p.prom = p.prom.then(() => bot.sendMessage(chatId, msg));
+                    p.length = c.length;
+                    p.lastIdx = idx;
+                } else {
+                    p.length = p.length + c.length;
+                }
                 return p;
+            },
+            {
+                length: 0,
+                lastIdx: 0,
+                prom: Promise.resolve()
             }
-            if (p.length + c.length > max_msg_length) {
-                const msg = textList.slice(p.lastIdx, idx).join(separator);
-                p.prom = p.prom.then( () => bot.sendMessage(chatId, msg) );
-                p.length = c.length;
-                p.lastIdx = idx;
-            }
-            else {
-                p.length = p.length + c.length;
-            }
-            return p;
-        }, {
-            length: 0,
-            lastIdx: 0,
-            prom: Promise.resolve()
-        });
+        );
 
-        return tmp.prom.then( () => {
-            const msg = textList.slice(tmp.lastIdx, textList.length).join(separator);
+        return tmp.prom.then(() => {
+            const msg = textList
+                .slice(tmp.lastIdx, textList.length)
+                .join(separator);
             return bot.sendMessage(chatId, msg);
         });
-    },
-
-
-    /**
-     * Returns a stream of the rendered HTML
-     *
-     * @param  {string} html       HTML to render
-     * @param  {object} screenSize Global browser window object
-     * @return {Stream}            Rendered stream
-     */
-    screenshotHtml(html, screenSize) {
-        return webshot(html, {siteType: 'html', screenSize});
-    },
-
-    /**
-     * Converts a given stream to a buffer
-     * @param  {Stream} stream      Stream to convert
-     * @return {Promise<Buffer>}    Promise resolved with a Buffer
-     */
-    convertStreamToBuffer(stream) {
-        return new Promise((resolve, reject) => {
-            const bufs = [];
-            stream.on('data', function(d){ bufs.push(d); });
-            stream.on('end', function(){
-                resolve(Buffer.concat(bufs));
-            });
-
-            stream.on('error', err => reject(err));
-          })
     },
 
     /**
@@ -244,10 +179,110 @@ const utils = {
      * @return {Boolean}
      */
     checkGroup(msg) {
-        if (process.env.NODE_ENV === 'development')
-            return true;
+        if (process.env.NODE_ENV === 'development') return true;
 
         return msg.chat.id === config.chatId || msg.chat.id === config.ownerid;
+    },
+
+    /**
+     * Renders a table as canvas and returns it as buffer
+     *
+     * @param  {Object} headers     Header object.
+     *                              {key: 'Name'}
+     *                              The name is rendered as column header.
+     *                              All and only keys of the header object
+     *                              will be used to extract information
+     *                              from the individual rows.
+     *
+     * @param  {[Object]} rows      Array of row objects
+     * @param  {Object} ctx         Context handle for a canvas,
+     *                              is used for the font formatting.
+     *                              font and fillStyle are copied over.
+     * @return {Buffer}
+     */
+
+    renderTable(headers, rows, ctx) {
+        // space between individual cells or columns
+        const diff = 20;
+
+        const measure = txt => ctx.measureText(txt);
+
+        const columnMaxSizes = Object.keys(headers).reduce((acc, key) => {
+            const headerMeasures = measure(headers[key]);
+            acc[key] = {
+                height: getHeight(headerMeasures),
+                width: headerMeasures.width
+            };
+
+            rows.forEach(res => {
+                const sizes = measure(`${res[key]}`);
+
+                if (acc[key].width < sizes.width) acc[key].width = sizes.width;
+
+                if (acc[key].height < getHeight(sizes))
+                    acc[key].height = getHeight(sizes);
+            });
+
+            return acc;
+        }, {});
+
+        const lineHeight = Object.keys(columnMaxSizes)
+            .map(k => columnMaxSizes[k])
+            .reduce(
+                (prev, curr) => (prev > curr.height ? prev : curr.height),
+                0
+            );
+
+        const maxSize = Object.keys(columnMaxSizes).reduce(
+            (prev, curr) => {
+                const itm = columnMaxSizes[curr];
+                prev.width = prev.width + itm.width;
+                return prev;
+            },
+            {
+                width: Object.keys(headers).length * diff + diff + diff
+            }
+        );
+
+        // Set height separately, as this is just a rather simple multiplication
+        maxSize.height = (lineHeight + diff) * (rows.length + 1);
+
+        const img = new Canvas(maxSize.width, maxSize.height);
+        const c = img.getContext('2d');
+        c.font = ctx.font;
+        c.fillStyle = ctx.fillStyle;
+
+        // Draw headers
+        Object.keys(headers).reduce((x, key) => {
+            c.fillText(headers[key], x, columnMaxSizes[key].height);
+            // Draw vertical lines
+            c.beginPath();
+            c.lineTo(x + columnMaxSizes[key].width + diff, 0);
+            c.lineTo(x + columnMaxSizes[key].width + diff, maxSize.height);
+            c.stroke();
+            // Draw the first horizontal line
+            c.beginPath();
+            c.lineTo(0, lineHeight + diff);
+            c.lineTo(maxSize.width, lineHeight + diff);
+            c.stroke();
+            return x + columnMaxSizes[key].width + diff * 2;
+        }, 0);
+
+        // Insert rows
+        rows.reduce((y, row) => {
+            Object.keys(headers).reduce((x, key) => {
+                c.fillText(row[key], x, y);
+                return x + columnMaxSizes[key].width + diff * 2;
+            }, 0);
+            // Draw horizontal line
+            c.beginPath();
+            c.lineTo(0, y + diff);
+            c.lineTo(maxSize.width, y + diff);
+            c.stroke();
+            return y + lineHeight + diff;
+        }, lineHeight * 2 + diff);
+
+        return img.toBuffer();
     }
 };
 
