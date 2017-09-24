@@ -1,6 +1,7 @@
-{
+module.exports = {
     token: 'token',
     ownerid: 12345,
+    chatId: 12345,
     dbConn: {
         client: 'pg',
         debug: false,
