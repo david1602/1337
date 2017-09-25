@@ -145,11 +145,13 @@ const ex = {
         /**
          * Creates a new post in the database
          *
-         * @param  {String} user     Name of the user to post
+         * @param  {String} user     ID of the user that posts
          * @param  {String} postdate description
          * @return {Promise<undefined>}
          */
         create(user, postdate) {
+            // Require here to avoid circular reference
+            const { getDate } = require('./utils');
             return db
                 .any(
                     `
@@ -162,7 +164,7 @@ const ex = {
                 FROM posts p
                   INNER JOIN maxDates m ON p.user_id = m.user_id AND p.postdate = m.maxdate
                   INNER JOIN users u ON p.user_id = u.id
-                WHERE name = $1
+                WHERE u.id = $1
             `,
                     [user]
                 )
@@ -170,7 +172,10 @@ const ex = {
                     let streak = 1;
 
                     // We definitely don't want to try inserting posts twice
-                    if (records.length > 0 && records[0].postdate === postdate)
+                    if (
+                        records.length > 0 &&
+                        getDate(records[0].postdate, true) === postdate
+                    )
                         return;
 
                     if (
@@ -185,7 +190,7 @@ const ex = {
                     return db.none(
                         `
                     INSERT INTO posts(user_id, postdate, streak)
-                    VALUES((SELECT id FROM users WHERE name = $1), $2, $3)
+                    VALUES($1, $2, $3)
                     `,
                         [user, postdate, streak]
                     );

@@ -41,8 +41,8 @@ const posted = {};
 
 const postStats = chatId => {
     delete posted[moment().format('YYYY-MM-DD')];
-    return db.stats.getStatistics().then(msg => {
-        bot.sendMessage(chatId, msg);
+    return db.stats.getStatistics().then(results => {
+        bot.sendPhoto(chatId, utils.getTableBuffer(results));
     });
 };
 
@@ -98,21 +98,22 @@ init(bot, ctx).then(() => {
                 if (msg.text === '1337' && time === effectiveTime) {
                     // Manipulate the state object
                     if (!posted[currentDate].scheduled) {
-                        schedule(postStats, 70000, chatId);
+                        // schedule(postStats, 70000, chatId);
+                        schedule(postStats, 2000, chatId);
                         posted[currentDate].scheduled = true;
                     }
 
-                    if (!posted[currentDate][userName])
-                        posted[currentDate][userName] = {};
+                    if (!posted[currentDate][userId])
+                        posted[currentDate][userId] = {};
 
                     // If the user posted previously on that very day and failed, he may not correct
                     if (
-                        posted[currentDate][userName] &&
+                        posted[currentDate][userId] &&
                         'undefined' ===
-                            typeof posted[currentDate][userName].success
+                            typeof posted[currentDate][userId].success
                     ) {
-                        posted[currentDate][userName] = { success: true };
-                        db.stats.create(userName, currentDate);
+                        posted[currentDate][userId] = { success: true };
+                        db.stats.create(userId, currentDate);
                     }
                 }
 
@@ -134,10 +135,10 @@ init(bot, ctx).then(() => {
                 // If someone fails prior to the time on that day, he may not attmept again
                 if (
                     msg.text === '1337' &&
-                    !posted[currentDate][userName] &&
+                    !posted[currentDate][userId] &&
                     time < effectiveTime
                 ) {
-                    posted[currentDate][userName] = { success: false };
+                    posted[currentDate][userId] = { success: false };
                     bot.sendMessage(
                         chatId,
                         `You failed today ${userName}. You may not try again.`

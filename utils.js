@@ -93,6 +93,22 @@ const utils = {
     },
 
     /**
+     * returns a moment date or formatted string
+     *
+     * @param  {Mixed} date                 Date as moment parseable value
+     * @param  {boolean} format = false     Format or not?
+     * @return {Object|String}
+     */
+
+    getDate(date, format = false) {
+        const m = moment.tz(moment(date), 'Europe/Berlin');
+
+        if (!format) return m;
+
+        return m.format('YYYY-MM-DD');
+    },
+
+    /**
      * Gets the user name from a telegram user object.
      *
      * @param  {Object} user Telegram user object, usually the "from" property of a message
@@ -283,6 +299,32 @@ const utils = {
         }, lineHeight * 2 + diff);
 
         return img.toBuffer();
+    },
+
+    /**
+     * Returns the buffer for the Canvas
+     * for the stat overview
+     *
+     * @param  {[Object]} results   database results for the getStatistics query
+     * @return {Buffer}
+     */
+
+    getTableBuffer(results) {
+        const c = new Canvas();
+        const ctx = c.getContext('2d');
+        ctx.font = '60px Arial';
+        ctx.fillStyle = '#41aff4';
+
+        return utils.renderTable(
+            {
+                name: 'Name',
+                amountposts: 'Amount Posts',
+                maxstreak: 'Max Streak',
+                streak: 'Current Streak'
+            },
+            results,
+            ctx
+        );
     }
 };
 
