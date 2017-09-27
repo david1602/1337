@@ -215,7 +215,7 @@ const ex = {
                   GROUP BY 1
                 )
                 SELECT u.id, u.name, postdate,
-                    CASE WHEN maxdate != now()::date THEN 0 ELSE COALESCE(streak, 0) END AS streak,
+                    COALESCE(streak, 0) AS streak,
                     COALESCE(amountPosts, 0) AS amountPosts, COALESCE(maxStreak, 0) AS maxStreak
                 FROM users u
                   LEFT JOIN maxDates m ON u.id = m.user_id
