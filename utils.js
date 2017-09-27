@@ -315,6 +315,23 @@ const utils = {
         ctx.font = '60px Arial';
         ctx.fillStyle = '#41aff4';
 
+        const current = utils.getDate(Date.now());
+
+        const target = utils.getDate(
+            `${utils.getDate(Date.now(), true)} 22:37`
+        );
+
+        results.forEach(res => {
+            const checkDate = current.isBefore(target)
+                ? utils.getDate(
+                      moment(target).subtract(1, 'day').format('YYYY-MM-DD'),
+                      true
+                  )
+                : utils.getDate(Date.now(), true);
+
+            if (utils.getDate(res.postdate, true) !== checkDate) res.streak = 0;
+        });
+
         return utils.renderTable(
             {
                 name: 'Name',
