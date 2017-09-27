@@ -99,7 +99,7 @@ init(bot, ctx).then(() => {
                     // Manipulate the state object
                     if (!posted[currentDate].scheduled) {
                         // schedule(postStats, 70000, chatId);
-                        schedule(postStats, 2000, chatId);
+                        schedule(postStats, 70000, chatId);
                         posted[currentDate].scheduled = true;
                     }
 
