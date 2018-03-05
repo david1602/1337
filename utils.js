@@ -318,7 +318,7 @@ const utils = {
         const current = utils.getDate(Date.now());
 
         const target = utils.getDate(
-            `${utils.getDate(Date.now(), true)} 22:37`
+            `${utils.getDate(Date.now(), true)} 13:37`
         );
 
         results.forEach(res => {
