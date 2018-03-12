@@ -11,6 +11,7 @@
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
     "node-telegram-bot-api": "github:david1602/node-telegram-bot-api",
+    "nodemon": "^1.17.1",
     "ntpsync": "^0.2.0",
     "pg-promise": "^5.9.3"
   },
@@ -22,7 +23,7 @@
   },
   "betterScripts": {
     "dev": {
-      "command": "node bot.js",
+      "command": "nodemon bot.js",
       "env": {
         "NODE_ENV": "development",
         "NTBA_FIX_319": true
