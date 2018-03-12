@@ -328,14 +328,14 @@ const utils = {
         ctx.fillStyle = '#41aff4';
 
         const current = utils.getServerTime();
-
         const target = utils.getPostTime();
 
         results.forEach(res => {
             const checkDate = current.isBefore(target)
                 ? utils.getDate(target.subtract(1, 'day'), true)
                 : utils.getDate(Date.now(), true);
-
+            console.log('res', res);
+            console.log(checkDate, checkDate);
             if (utils.getDate(res.postdate, true) !== checkDate) res.streak = 0;
         });
 
