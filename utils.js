@@ -3,6 +3,7 @@ const db = require('./db');
 const moment = require('moment-timezone');
 const config = require('./config');
 const Canvas = require('canvas');
+const timezone = 'Europe/Berlin';
 
 // Actually 4096 but it doesn't hurt to have some backup
 const max_msg_length = 3000;
@@ -57,12 +58,7 @@ const utils = {
             // Only register responses if the bot was passed
             if (bot)
                 responses.forEach(resp => {
-                    utils.registerRegex(
-                        bot,
-                        resp.regex,
-                        resp.response,
-                        resp.type
-                    );
+                    utils.registerRegex(bot, resp.regex, resp.response, resp.type);
                 });
         });
     },
@@ -87,9 +83,31 @@ const utils = {
      * @return {String}         HH:mm formatted time
      */
     getTime(date) {
+        return moment.tz(moment(date && date * 1000), timezone).format('HH:mm');
+    },
+
+    /**
+     * Returns the post time in the specified timezone
+     *
+     * @param  {Moment-like} date = null    optional date to parse as initial value,
+     *                                      to get the post time for a different day
+     * @return {Moment}                       Moment object with the post time in the appropriate timezone
+     */
+    getPostTime(date = null) {
         return moment
-            .tz(moment(date && date * 1000), 'Europe/Berlin')
-            .format('HH:mm');
+            .tz(date ? moment(date) : moment(), timezone)
+            .hour(13)
+            .minute(37)
+            .second(0);
+    },
+
+    /**
+     * Returns the current server time in the configured timezone
+     *
+     * @return {Moment} moment object with the configured timezone
+     */
+    getServerTime() {
+        return moment.tz(moment(), timezone);
     },
 
     /**
@@ -101,7 +119,7 @@ const utils = {
      */
 
     getDate(date, format = false) {
-        const m = moment.tz(moment(date), 'Europe/Berlin');
+        const m = moment.tz(moment(date), timezone);
 
         if (!format) return m;
 
@@ -181,9 +199,7 @@ const utils = {
         );
 
         return tmp.prom.then(() => {
-            const msg = textList
-                .slice(tmp.lastIdx, textList.length)
-                .join(separator);
+            const msg = textList.slice(tmp.lastIdx, textList.length).join(separator);
             return bot.sendMessage(chatId, msg);
         });
     },
@@ -235,8 +251,7 @@ const utils = {
 
                 if (acc[key].width < sizes.width) acc[key].width = sizes.width;
 
-                if (acc[key].height < getHeight(sizes))
-                    acc[key].height = getHeight(sizes);
+                if (acc[key].height < getHeight(sizes)) acc[key].height = getHeight(sizes);
             });
 
             return acc;
@@ -244,10 +259,7 @@ const utils = {
 
         const lineHeight = Object.keys(columnMaxSizes)
             .map(k => columnMaxSizes[k])
-            .reduce(
-                (prev, curr) => (prev > curr.height ? prev : curr.height),
-                0
-            );
+            .reduce((prev, curr) => (prev > curr.height ? prev : curr.height), 0);
 
         const maxSize = Object.keys(columnMaxSizes).reduce(
             (prev, curr) => {
@@ -315,18 +327,13 @@ const utils = {
         ctx.font = '60px Arial';
         ctx.fillStyle = '#41aff4';
 
-        const current = utils.getDate(Date.now());
+        const current = utils.getServerTime();
 
-        const target = utils.getDate(
-            `${utils.getDate(Date.now(), true)} 13:37`
-        );
+        const target = utils.getPostTime();
 
         results.forEach(res => {
             const checkDate = current.isBefore(target)
-                ? utils.getDate(
-                      moment(target).subtract(1, 'day').format('YYYY-MM-DD'),
-                      true
-                  )
+                ? utils.getDate(target.subtract(1, 'day'), true)
                 : utils.getDate(Date.now(), true);
 
             if (utils.getDate(res.postdate, true) !== checkDate) res.streak = 0;

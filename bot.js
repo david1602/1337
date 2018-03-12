@@ -2,13 +2,7 @@ const TelegramBot = require('node-telegram-bot-api');
 const moment = require('moment-timezone');
 const fs = require('fs');
 const path = require('path');
-const {
-    init,
-    getTime,
-    getUserName,
-    getRandomOfArray,
-    errHandler
-} = require('./utils');
+const { init, getTime, getUserName, getRandomOfArray, errHandler } = require('./utils');
 const db = require('./db');
 const { token } = require('./config');
 const utils = require('./utils');
@@ -50,10 +44,7 @@ const registerUser = (msg, chatId) => {
     if (!ctx.users.find(usr => usr.id === msg.from.id)) {
         const name = getUserName(msg.from);
         return db.users.create(msg.from.id, name).then(() =>
-            Promise.all([
-                db.users.getAll(),
-                db.stats.getAll()
-            ]).then(([users, stats]) => {
+            Promise.all([db.users.getAll(), db.stats.getAll()]).then(([users, stats]) => {
                 ctx.users = users;
                 ctx.stats = stats;
                 bot.sendMessage(chatId, `Nice meeting you, ${name}.`);
@@ -103,15 +94,10 @@ init(bot, ctx).then(() => {
                         posted[currentDate].scheduled = true;
                     }
 
-                    if (!posted[currentDate][userId])
-                        posted[currentDate][userId] = {};
+                    if (!posted[currentDate][userId]) posted[currentDate][userId] = {};
 
                     // If the user posted previously on that very day and failed, he may not correct
-                    if (
-                        posted[currentDate][userId] &&
-                        'undefined' ===
-                            typeof posted[currentDate][userId].success
-                    ) {
+                    if (posted[currentDate][userId] && 'undefined' === typeof posted[currentDate][userId].success) {
                         posted[currentDate][userId] = { success: true };
                         db.stats.create(userId, currentDate);
                     }
@@ -120,9 +106,7 @@ init(bot, ctx).then(() => {
                 // If someone generally posts 1337 at an unappropriate time, just flame them
                 if (msg.text === '1337' && time !== effectiveTime) {
                     const flame = getRandomOfArray(
-                        ctx.flames.filter(
-                            f => f.user_id === msg.from.id || f.user_id === null
-                        )
+                        ctx.flames.filter(f => f.user_id === msg.from.id || f.user_id === null)
                     );
                     if (!flame)
                         bot.sendMessage(
@@ -133,16 +117,9 @@ init(bot, ctx).then(() => {
                 }
 
                 // If someone fails prior to the time on that day, he may not attmept again
-                if (
-                    msg.text === '1337' &&
-                    !posted[currentDate][userId] &&
-                    time < effectiveTime
-                ) {
+                if (msg.text === '1337' && !posted[currentDate][userId] && time < effectiveTime) {
                     posted[currentDate][userId] = { success: false };
-                    bot.sendMessage(
-                        chatId,
-                        `You failed today ${userName}. You may not try again.`
-                    );
+                    bot.sendMessage(chatId, `You failed today ${userName}. You may not try again.`);
                 }
             })
             .catch(errHandler);
