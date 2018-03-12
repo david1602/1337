@@ -334,8 +334,6 @@ const utils = {
             const checkDate = current.isBefore(target)
                 ? utils.getDate(moment(target).subtract(1, 'day'), true)
                 : utils.getDate(Date.now(), true);
-            console.log('res', res);
-            console.log(checkDate, checkDate);
             if (utils.getDate(res.postdate, true) !== checkDate) res.streak = 0;
         });
 
