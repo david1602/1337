@@ -43,12 +43,7 @@ const utils = {
      * @return {Promise}
      */
     init(bot, ctx) {
-        return Promise.all([
-            db.flames.getAll(),
-            db.stats.getAll(),
-            db.users.getAll(),
-            db.responses.getAll()
-        ]).then(([flames, stats, users, responses]) => {
+        return Promise.all([db.flames.getAll(), db.stats.getAll(), db.users.getAll(), db.responses.getAll()]).then(([flames, stats, users, responses]) => {
             ctx.users = users;
             ctx.stats = stats;
             ctx.flames = flames;
@@ -147,6 +142,7 @@ const utils = {
      */
     registerRegex(bot, regex, response, type = 'Message') {
         const parsed = new RegExp(regex, 'gi');
+
         bot.onText(parsed, (msg, matches) => {
             const chatId = msg.chat.id;
             // Go through all the params and replace
@@ -156,7 +152,7 @@ const utils = {
                 const currentRegex = new RegExp(`\\$${idx}`, 'g');
                 return prev.replace(currentRegex, matches[idx]);
             }, response);
-            bot[`send${type}`](chatId, returnMsg);
+            bot[`send${type || 'Message'}`](chatId, returnMsg);
         });
     },
 
@@ -331,9 +327,7 @@ const utils = {
         const target = utils.getPostTime();
 
         results.forEach(res => {
-            const checkDate = current.isBefore(target)
-                ? utils.getDate(moment(target).subtract(1, 'day'), true)
-                : utils.getDate(Date.now(), true);
+            const checkDate = current.isBefore(target) ? utils.getDate(moment(target).subtract(1, 'day'), true) : utils.getDate(Date.now(), true);
             if (utils.getDate(res.postdate, true) !== checkDate) res.streak = 0;
         });
 
