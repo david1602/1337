@@ -14,6 +14,7 @@ const fn = bot.processUpdate.bind(bot);
 
 process.on('unhandledRejection', reason => {
     console.error('*** Unhandled promise rejection', reason);
+    process.exit(1); // Exit to allow for a restart
 });
 
 bot.processUpdate = function(update) {
@@ -69,7 +70,9 @@ init(bot, ctx).then(() => {
     // Listen for any kind of message. There are different kinds of
     // messages.
     console.log('Registering message handler');
-    bot.on('message', msg => {
+    bot.on('message', async msg => {
+        await db.log(msg);
+
         const chatId = msg.chat.id;
         const userId = msg.from.id;
         const userName = getUserName(msg.from);
@@ -105,14 +108,8 @@ init(bot, ctx).then(() => {
 
                 // If someone generally posts 1337 at an unappropriate time, just flame them
                 if (msg.text === '1337' && time !== effectiveTime) {
-                    const flame = getRandomOfArray(
-                        ctx.flames.filter(f => f.user_id === msg.from.id || f.user_id === null)
-                    );
-                    if (!flame)
-                        bot.sendMessage(
-                            chatId,
-                            "I don't even know how to flame you, I haven't been taught any flames."
-                        );
+                    const flame = getRandomOfArray(ctx.flames.filter(f => f.user_id === msg.from.id || f.user_id === null));
+                    if (!flame) bot.sendMessage(chatId, "I don't even know how to flame you, I haven't been taught any flames.");
                     else bot.sendMessage(chatId, flame.content);
                 }
 

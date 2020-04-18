@@ -340,7 +340,12 @@ const ex = {
         getAll() {
             return db.any(`SELECT * FROM responses`);
         }
+    },
+
+    log(data) {
+        return db.none(`INSERT INTO "Log"(data) VALUES($1);`, [JSON.stringify(data, null, 2)])
     }
+
 };
 
 module.exports = ex;
