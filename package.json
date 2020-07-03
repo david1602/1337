@@ -8,7 +8,7 @@
         "canvas": "^1.6.10",
         "eslint": "^4.18.2",
         "knex": "^0.19.5",
-        "moment": "^2.18.1",
+        "moment": "^2.19.3",
         "moment-timezone": "^0.5.13",
         "node-telegram-bot-api": "github:david1602/node-telegram-bot-api",
         "nodemon": "^1.17.1",
