@@ -13,7 +13,7 @@
         "node-telegram-bot-api": "github:david1602/node-telegram-bot-api",
         "nodemon": "^1.17.1",
         "ntpsync": "^0.2.0",
-        "pg-promise": "^5.9.3"
+        "pg-promise": "^11.5.5"
     },
     "devDependencies": {},
     "scripts": {
